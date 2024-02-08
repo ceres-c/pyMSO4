@@ -6,7 +6,7 @@ from . import scope_logger
 class MSO4Acquisition(util.DisableNewAttr):
 	'''Handle all the properties related to waveform acquisition.
 
-	Attributes:
+	Attributes: # TODO update this list
 		ch<n> (MSO4Vertical): The vertical channel settings for channel n.
 		mode (str): The acquisition mode of the scope.
 		stop_after (str): Wether the instrument continually acquires acquisitions or acquires a single sequence
@@ -26,6 +26,7 @@ class MSO4Acquisition(util.DisableNewAttr):
 	modes = ['sample', 'peakdetect', 'hires', 'average', 'envelope']
 	sources = ['ch1', 'ch2', 'ch3', 'ch4'] # TODO how to retrieve this from the scope?
 	stop_afters = ['sequence', 'runstop']
+	horiz_modes = ['auto', 'manual']
 	wfm_encodings = ['binary', 'ascii']
 	wfm_binary_formats = ['ri', 'rp', 'fp']
 	wfm_byte_nrs = [1, 2, 8] # Programmer manual § WFMOutpre:BYT_Nr
@@ -41,6 +42,7 @@ class MSO4Acquisition(util.DisableNewAttr):
 		self._cached_wfm_byte_nr = None
 		self._cached_wfm_order = None
 		self._cached_curvestream = None
+		self._cached_fast_acq = None
 
 		self.disable_newattr()
 
@@ -55,6 +57,7 @@ class MSO4Acquisition(util.DisableNewAttr):
 		self._cached_wfm_byte_nr = None
 		self._cached_wfm_order = None
 		self._cached_curvestream = None
+		self._cached_fast_acq = None
 
 	def configured(self) -> bool:
 		'''Check if the scope have been configured for acquisition.
@@ -64,6 +67,7 @@ class MSO4Acquisition(util.DisableNewAttr):
 		Raises: ValueError if any of the required variables are not set
 		'''
 		if self.curvestream:
+			# Can't send any command while in curvestream mode, or it will be interrupted
 			return True
 		if all([self.mode, self.wfm_src, self.wfm_encoding, self.wfm_binary_format, self.wfm_byte_nr, self.wfm_byte_order]):
 			return True
@@ -148,6 +152,47 @@ class MSO4Acquisition(util.DisableNewAttr):
 	@display.setter
 	def display(self, value: bool):
 		self.sc.write(f'DISplay:WAVEform {"on" if value else "off"}')
+
+	@property
+	def horiz_mode(self) -> str:
+		'''The horizontal operating mode.
+		Not cached
+
+		:Getter: Return the mode (str)
+
+		:Setter: Set the mode. Valid values are:
+			* 'auto': automatically adjusts the sample rate and record length to provide
+					  a high acquisition rate in Fast Acq or signal fidelity in analysis
+			* 'manual': lets you change the sample rate, horizontal scale, and record length.
+						These values interact. For example, when you change record length
+						then the horizontal scale also changes.
+		'''
+		return self.sc.query('HORizontal:MODe?').strip().lower()
+	@horiz_mode.setter
+	def horiz_mode(self, value: str):
+		if value.lower() not in self.horiz_modes:
+			raise ValueError(f'Invalid mode {value}. Valid modes are {self.horiz_modes}')
+		self.sc.write(f'HORizontal:MODe {value}')
+
+	@property
+	def horiz_sample_rate(self) -> float:
+		'''The horizontal sample rate of the waveform.
+		Not cached
+
+		:Getter: Return the sample rate in Hz (float)
+
+		:Setter: Set the sample rate in Hz (int or float)
+		'''
+		return float(self.sc.query('HORizontal:MODe:SAMPlerate?').strip())
+	@horiz_sample_rate.setter
+	def horiz_sample_rate(self, value: float | int):
+		if not isinstance(value, float) and not isinstance(value, int):
+			raise ValueError(f'Invalid sample rate {value}. Must be a float or an int.')
+		self.sc.write(f'HORizontal:MODe:SAMPlerate {value}')
+		# Check if the sample rate was set correctly
+		actual = self.horiz_sample_rate
+		if actual != value:
+			scope_logger.warning('Failed to set horizontal sample rate to %f. Got %f instead.', value, actual)
 
 	@property
 	def horiz_scale(self) -> float:
@@ -374,7 +419,8 @@ class MSO4Acquisition(util.DisableNewAttr):
 		:Setter: Set the curvestream state (bool)
 		'''
 		if self._cached_curvestream is None:
-			self._cached_curvestream = 'curvestream' in self.sc.query('*OPC?').lower()
+			self.sc.write('*CLS') # If we don't know, better disable it to be sure
+			self._cached_curvestream = False
 		return self._cached_curvestream
 	@curvestream.setter
 	def curvestream(self, value: bool):
@@ -385,3 +431,22 @@ class MSO4Acquisition(util.DisableNewAttr):
 			self.sc.write('CURVestream?')
 		else:
 			self.sc.write('*CLS')
+
+	@property
+	def fast_acq(self) -> bool:
+		'''Enable or disable fast acquisition mode.
+		Cached
+
+		:Getter: Return the fast acquisition state (bool)
+
+		:Setter: Set the fast acquisition state (bool)
+		'''
+		if self._cached_fast_acq is None:
+			self._cached_fast_acq = bool(int(self.sc.query("ACQuire:FASTAcq:STATE?").strip()))
+		return self._cached_fast_acq
+	@fast_acq.setter
+	def fast_acq(self, value: bool):
+		if self._cached_fast_acq == value:
+			return
+		self._cached_fast_acq = value
+		self.sc.write(f'ACQuire:FASTAcq:STATE {int(value)}')

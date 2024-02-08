@@ -12,7 +12,6 @@ from .channel import MSO4AnalogChannel
 from . import scope_logger
 
 # TODO:
-# * Enable/disable channels
 # * Implement the other trigger types (mostly sequence)
 # * Change binary format to 8 bit when in low res mode?
 # * Add note about starting off with a freshly booted machine to avoid issues
@@ -31,12 +30,19 @@ class MSO4:
 	sources = ['ch1', 'ch2', 'ch3', 'ch4'] # TODO add MATH_, REF_, CH_D...
 	# See programmer manual § DATa:SOUrce
 
-	def __init__(self):
+	def __init__(self, trig_type: MSO4Triggers = MSO4EdgeTrigger, timeout: float = 2000.0):
+		'''Creates a new MSO4 object.
+
+		Args:
+			trig_type: The type of trigger to use. This can be changed later.
+			timeout: Timeout (in ms) for each VISA operation, including the CURVE? query.
+		'''
 		self.rm: pyvisa.ResourceManager = None # type: ignore
 		self.sc: pyvisa.resources.MessageBasedResource = None # type: ignore
 
 		# Local storage for the internal trigger instance
-		self._trig: MSO4Triggers = None # type: ignore
+		self._trig = trig_type
+		self._timeout = timeout # Never read this value, use self.sc.timeout instead, this is only temporary storage until `con()` is called
 		self.acq: MSO4Acquisition = None # type: ignore
 
 		self.ch_a: list[MSO4AnalogChannel] = []
@@ -44,7 +50,7 @@ class MSO4:
 
 		self.wfm_data_points: Sequence = []
 
-		self.connectStatus = False
+		self.connect_status = False
 
 	def clear_cache(self) -> None:
 		'''Resets the local configuration cache so that values will be fetched from
@@ -61,7 +67,7 @@ class MSO4:
 		self.wfm_data_points = []
 
 	def _id_scope(self) -> dict:
-		'''Read identification string from scope
+		'''Reads identification string from scope
 
 		Raises:
 			Exception: Error when arming. This method catches these and
@@ -76,7 +82,7 @@ class MSO4:
 
 		s = idn.split(',')
 		if len(s) != 4:
-			raise OSError('Invalid IDN string returned from scope')
+			raise OSError(f'Invalid IDN string returned from scope: {idn}')
 		return {
 			'vendor': s[0],
 			'model': s[1],
@@ -84,9 +90,9 @@ class MSO4:
 			'firmware': s[3]
 		}
 
-	def con(self, ip: str = '', trig_type: MSO4Triggers = MSO4EdgeTrigger, socket: bool = True, display: bool = True, **kwargs) -> bool:
-		'''Connect to scope and set default configuration:
-			- timeout = 2000 ms
+	def con(self, ip: str = '', socket: bool = True, **kwargs) -> bool:
+		'''Connects to scope and sets default configuration:
+			- timeout = timeout from init
 			- event reporting enabled on all events
 			- clear event queue, standard event status register, status byte register
 			- waveform start = 1
@@ -99,7 +105,6 @@ class MSO4:
 		Args:
 			ip (str): IP address of scope
 			socket (bool): Use socket connection instead of VISA
-			display (bool): Enable/disable waveform display on scope
 			kwargs: Additional arguments to pass to pyvisa.ResourceManager.open_resource
 
 		Returns:
@@ -120,8 +125,12 @@ class MSO4:
 			self.sc.write_termination = '\n'
 		else:
 			self.sc = self.rm.open_resource(f'TCPIP::{ip}::INSTR') # type: ignore
-		self.sc.write('*CLS') # Clear event queue, standard event status register, status byte register
+
+		# Set visa timeout
+		self.timeout = self._timeout
+
 		self.sc.clear() # Clear buffers
+		self.sc.write('*CLS') # Clear event queue, standard event status register, status byte register
 
 		sc_id = self._id_scope()
 		if sc_id['vendor'] != 'TEKTRONIX':
@@ -131,19 +140,18 @@ class MSO4:
 			self.dis()
 			raise OSError(f'Invalid model returned from scope {sc_id["model"]}')
 
-		# Set visa timeout
-		self.timeout = 2000 # ms
-
-		# Init additional scope classes
-		self.trigger = trig_type
-		self.acq = MSO4Acquisition(self.sc)
-		ch_a_num = int(sc_id['model'][-1]) # Hacky, I know, but even Tektronix people suggest it
-		# Source: https://forum.tek.com/viewtopic.php?f=568&t=135345
-		for ch_a in range(ch_a_num):
-			self.ch_a.append(MSO4AnalogChannel(self.sc, ch_a + 1))
+		self.connect_status = True
 
 		# Configure scope environment
 		try:
+			# Init additional scope classes
+			self.trigger = self._trig
+			self.acq = MSO4Acquisition(self.sc)
+			ch_a_num = int(sc_id['model'][-1]) # Hacky, I know, but even Tektronix people suggest it
+			# Source: https://forum.tek.com/viewtopic.php?f=568&t=135345
+			for ch_a in range(ch_a_num):
+				self.ch_a.append(MSO4AnalogChannel(self.sc, ch_a + 1))
+
 			# Enable all events reporting in the status register
 			self.sc.write('DESE 255')
 
@@ -161,34 +169,48 @@ class MSO4:
 			# Set waveform start and stop (retrieve all data)
 			self.acq.wfm_start = 1
 			self.acq.wfm_stop = self.acq.horiz_record_length
-
-			# Turn off waveform display
-			# Or else the scope will simply DIE after ~20 captures (:
-			self.acq.display = display
-
-			# TODO set acquisition mode to single/sequence
-			# TODO actually remove all this stuff, it is not supposed to be done automatically
 		except Exception:
 			self.dis()
 			raise
 
-		self.connectStatus = True
 		return True
 
 	def dis(self) -> bool:
-		'''Disconnect from scope.
+		'''Disconnects from scope.
 		'''
 		# Re enable waveform display
 		self.sc.clear()
 		self.sc.write('*CLS') # Clear event queue, standard event status register, status byte register
 		if self.acq:
 			self.acq.display = True
+		self.acq = None # type: ignore
 
 		self.sc.close()
+		self.sc = None # type: ignore
 		self.rm.close()
+		self.rm = None # type: ignore
 
-		self.connectStatus = False
+		self.ch_a = []
+		self.wfm_data_points = []
+
+		self.connect_status = False
 		return True
+
+	def reset(self) -> None:
+		'''Resets scope to default settings.
+		'''
+		self.sc.write("*RST")
+		self.sc.write("*OPC?")
+		for _ in range(100):
+			if int(self.sc.read()) == 1:
+				break
+		else:
+			raise OSError('Failed to reset scope')
+
+	def clear(self) -> None:
+		'''Clears all acquisitions, measurements, and waveforms.
+		'''
+		self.sc.write('CLEAR')
 
 	def arm(self) -> None:
 		'''Setup scope to begin capture/glitching when triggered.
@@ -202,7 +224,7 @@ class MSO4:
 				disconnects before reraising them.
 		'''
 
-		if self.connectStatus is False:
+		if self.connect_status is False:
 			raise OSError('Scope is not connected. Connect it first...')
 
 		if self.acq and self.acq.curvestream:
@@ -300,6 +322,8 @@ class MSO4:
 		return self._trig
 	@trigger.setter
 	def trigger(self, trig_type: MSO4Triggers):
+		if not self.connect_status:
+			raise OSError('Scope is not connected. Connect it first...')
 		self._trig = trig_type(self.sc)
 
 	@property
@@ -313,6 +337,8 @@ class MSO4:
 		return self.sc.timeout
 	@timeout.setter
 	def timeout(self, value: float):
+		if self.sc is None:
+			raise OSError('Scope is not connected. Connect it first...')
 		self.sc.timeout = value
 
 	@property
@@ -321,4 +347,7 @@ class MSO4:
 
 		:Getter: Return the number of analog channels (int)
 		'''
+		if not self.connect_status:
+			raise OSError('Scope is not connected. Connect it first...')
 		return len(self.ch_a) - 1
+	

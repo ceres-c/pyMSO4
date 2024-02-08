@@ -5,6 +5,7 @@ import pyvisa
 from . import util
 from . import scope_logger
 
+# TODO get rid of all the _get/_set functions and move the code to the properties
 class MSO4TriggerBase(util.DisableNewAttr):
 	'''Base trigger for the MSO 4-Series, used for settings shared by
 	all trigger types
@@ -56,6 +57,10 @@ class MSO4TriggerBase(util.DisableNewAttr):
 		self._cached_coupling = None
 		self._cached_level = None
 		self._cached_mode = None
+
+	def force(self):
+		'''Force the trigger to occur immediately'''
+		self.sc.write('TRIGger FORCe')
 
 	def _set_type(self, typ: str) -> None:
 		self.sc.write(f'TRIGGER:{self.event}:TYPE {typ}')
