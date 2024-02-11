@@ -1,10 +1,8 @@
 import time
 from typing import Sequence
 
-import pyvisa
-import numpy
+import pyvisa as visa
 
-from pyvisa import constants
 
 from .triggers import MSO4Triggers, MSO4EdgeTrigger
 from .acquisition import MSO4Acquisition
@@ -37,11 +35,11 @@ class MSO4:
 			trig_type: The type of trigger to use. This can be changed later.
 			timeout: Timeout (in ms) for each VISA operation, including the CURVE? query.
 		'''
-		self.rm: pyvisa.ResourceManager = None # type: ignore
-		self.sc: pyvisa.resources.MessageBasedResource = None # type: ignore
+		self.rm: visa.ResourceManager = None # type: ignore
+		self.sc: visa.resources.MessageBasedResource = None # type: ignore
 
 		# Local storage for the internal trigger instance
-		self._trig = trig_type
+		self._trig: MSO4Triggers = trig_type
 		self._timeout = timeout # Never read this value, use self.sc.timeout instead, this is only temporary storage until `con()` is called
 		self.acq: MSO4Acquisition = None # type: ignore
 
@@ -90,7 +88,7 @@ class MSO4:
 			'firmware': s[3]
 		}
 
-	def con(self, ip: str = '', socket: bool = True, **kwargs) -> bool:
+	def con(self, ip: str = '', **kwargs) -> bool:
 		'''Connects to scope and sets default configuration:
 			- timeout = timeout from init
 			- event reporting enabled on all events
@@ -104,7 +102,6 @@ class MSO4:
 
 		Args:
 			ip (str): IP address of scope
-			socket (bool): Use socket connection instead of VISA
 			kwargs: Additional arguments to pass to pyvisa.ResourceManager.open_resource
 
 		Returns:
@@ -118,19 +115,11 @@ class MSO4:
 		if not ip:
 			raise ValueError('IP address must be specified')
 
-		self.rm = pyvisa.ResourceManager()
-		if socket:
-			self.sc = self.rm.open_resource(f'TCPIP::{ip}::4000::SOCKET', kwargs) # type: ignore
-			self.sc.read_termination = '\n'
-			self.sc.write_termination = '\n'
-		else:
-			self.sc = self.rm.open_resource(f'TCPIP::{ip}::INSTR') # type: ignore
+		self.rm = visa.ResourceManager()
+		self.sc = self.rm.open_resource(f'TCPIP0::{ip}::inst0::INSTR') # type: ignore
 
 		# Set visa timeout
 		self.timeout = self._timeout
-
-		self.sc.clear() # Clear buffers
-		self.sc.write('*CLS') # Clear event queue, standard event status register, status byte register
 
 		sc_id = self._id_scope()
 		if sc_id['vendor'] != 'TEKTRONIX':
@@ -142,47 +131,24 @@ class MSO4:
 
 		self.connect_status = True
 
-		# Configure scope environment
-		try:
-			# Init additional scope classes
-			self.trigger = self._trig
-			self.acq = MSO4Acquisition(self.sc)
-			ch_a_num = int(sc_id['model'][-1]) # Hacky, I know, but even Tektronix people suggest it
-			# Source: https://forum.tek.com/viewtopic.php?f=568&t=135345
-			for ch_a in range(ch_a_num):
-				self.ch_a.append(MSO4AnalogChannel(self.sc, ch_a + 1))
-
-			# Enable all events reporting in the status register
-			self.sc.write('DESE 255')
-
-			# Clear: Event Queue, Standard Event Status Register, Status Byte Register
-			self.sc.write('*CLS')
-
-			# Configure waveform data
-			# NOTE the DATA:ENCdg command is broken in the MSO44 firmware version 2.0.3.950
-			self.acq.wfm_encoding = 'binary'
-			self.acq.wfm_binary_format = 'ri' # Signed integer
-			# NOTE floating point seems to be rejected in the MSO44 firmware version 2.0.3.950
-			self.acq.wfm_byte_order = 'lsb' # Easier to work with little endian because numpy
-			self.acq.wfm_byte_nr = 2 # 16-bit
-
-			# Set waveform start and stop (retrieve all data)
-			self.acq.wfm_start = 1
-			self.acq.wfm_stop = self.acq.horiz_record_length
-		except Exception:
-			self.dis()
-			raise
+		# Init additional scope classes
+		self.trigger = self._trig
+		self.acq = MSO4Acquisition(self.sc)
+		ch_a_num = int(sc_id['model'][-1]) # Hacky, I know, but even Tektronix people suggest it
+		# Source: https://forum.tek.com/viewtopic.php?f=568&t=135345
+		for ch_a in range(ch_a_num):
+			self.ch_a.append(MSO4AnalogChannel(self.sc, ch_a + 1))
 
 		return True
 
-	def dis(self) -> bool:
-		'''Disconnects from scope.
+	def dis(self) -> None:
+		'''Disconnects from scope and clears all local data.
 		'''
 		# Re enable waveform display
-		self.sc.clear()
-		self.sc.write('*CLS') # Clear event queue, standard event status register, status byte register
-		if self.acq:
-			self.acq.display = True
+		self.clear_buffers()
+		self.cls()
+		self.display = True
+
 		self.acq = None # type: ignore
 
 		self.sc.close()
@@ -194,23 +160,47 @@ class MSO4:
 		self.wfm_data_points = []
 
 		self.connect_status = False
-		return True
+
+	def reboot(self) -> None:
+		'''Reboots the UI (as well as VISA server) on the scope. Note this will kill the current connection
+		'''
+		self.sc.write('SCOPEApp REBOOT')
+		self.acq = None # type: ignore
+
+		self.sc.close()
+		self.sc = None # type: ignore
+		self.rm.close()
+		self.rm = None # type: ignore
+
+		self.ch_a = []
+		self.wfm_data_points = []
+
+		self.connect_status = False
+
 
 	def reset(self) -> None:
 		'''Resets scope to default settings.
 		'''
 		self.sc.write("*RST")
 		self.sc.write("*OPC?")
-		for _ in range(100):
-			if int(self.sc.read()) == 1:
-				break
-		else:
-			raise OSError('Failed to reset scope')
+		while self.sc.stb == 0:
+			pass
+		self.sc.write("*CLS")
 
-	def clear(self) -> None:
+	def cls(self) -> None:
+		'''Clears event queue, standard event status register, status byte register.
+		'''
+		self.sc.write('*CLS')
+
+	def clear_cmd(self) -> None:
 		'''Clears all acquisitions, measurements, and waveforms.
 		'''
 		self.sc.write('CLEAR')
+
+	def clear_buffers(self) -> None:
+		'''Clears the resource buffers.
+		'''
+		self.sc.clear()
 
 	def ch_a_enable(self, value: list[bool]) -> None:
 		'''Convenience function to enable/disable analog channels.
@@ -259,4 +249,17 @@ class MSO4:
 		if not self.connect_status:
 			raise OSError('Scope is not connected. Connect it first...')
 		return len(self.ch_a) - 1
-	
+
+	@property
+	def display(self) -> bool:
+		'''Enable or disable the waveform display on the scope display.
+		Not cached
+
+		:Getter: Return the display state (bool)
+
+		:Setter: Set the display state (bool)
+		'''
+		return self.sc.query('DISplay:WAVEform?').strip().lower() == 'on'
+	@display.setter
+	def display(self, value: bool):
+		self.sc.write(f'DISplay:WAVEform {int(value)}')

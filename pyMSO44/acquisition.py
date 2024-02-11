@@ -1,7 +1,13 @@
+from typing import Literal
 import pyvisa
 
 from . import util
 from . import scope_logger
+
+# Taken from pyvisa.util
+BINARY_DATATYPES = Literal[
+    "s", "b", "B", "h", "H", "i", "I", "l", "L", "q", "Q", "f", "d"
+]
 
 class MSO4Acquisition(util.DisableNewAttr):
 	'''Handle all the properties related to waveform acquisition.
@@ -31,6 +37,12 @@ class MSO4Acquisition(util.DisableNewAttr):
 	wfm_binary_formats = ['ri', 'rp', 'fp']
 	wfm_byte_nrs = [1, 2, 8] # Programmer manual § WFMOutpre:BYT_Nr
 	wfm_byte_orders = ['lsb', 'msb']
+	wfm_datatypes: dict[int, dict[str, BINARY_DATATYPES]] = { # Got these from the programmer manual § WFMOutpre:BN_Fmt
+		1: {'ri': 'b', 'rp': 'B'},
+		2: {'ri': 'h', 'rp': 'H'},
+		4: {'ri': 'i', 'rp': 'I', 'fp': 'f'},
+		8: {'ri': 'q', 'rp': 'Q', 'fp': 'd'},
+	}
 
 	def __init__(self, res: pyvisa.resources.MessageBasedResource):
 		super().__init__()
@@ -140,20 +152,6 @@ class MSO4Acquisition(util.DisableNewAttr):
 		self.sc.write(f'ACQuire:SEQuence:NUMSEQuence {value}')
 
 	@property
-	def display(self) -> bool:
-		'''Enable or disable the waveform display on the scope display.
-		Not cached
-
-		:Getter: Return the display state (bool)
-
-		:Setter: Set the display state (bool)
-		'''
-		return self.sc.query('DISplay:WAVEform?').strip().lower() == 'on'
-	@display.setter
-	def display(self, value: bool):
-		self.sc.write(f'DISplay:WAVEform {"on" if value else "off"}')
-
-	@property
 	def horiz_mode(self) -> str:
 		'''The horizontal operating mode.
 		Not cached
@@ -255,7 +253,7 @@ class MSO4Acquisition(util.DisableNewAttr):
 
 	@property
 	def wfm_src(self) -> list[str]:
-		'''The analog FlexChannel(s) source(s) of the waveform.
+		'''Source of the retrieved waveform (analog FlexChannel(s) source(s)).
 		Not cached
 
 		:Getter: Return the source (str)
@@ -305,6 +303,15 @@ class MSO4Acquisition(util.DisableNewAttr):
 		if not isinstance(value, int):
 			raise ValueError(f'Invalid stop index {value}. Must be an int.')
 		self.sc.write(f'DATa:STOP {value}')
+
+	@property
+	def wfm_len(self) -> int:
+		'''The number of data points in the waveform.
+		Not cached
+
+		:Getter: Return the number of data points (int)
+		'''
+		return int(self.sc.query('WFMOutpre:NR_Pt?').strip())
 
 	@property
 	def wfm_encoding(self) -> str:
@@ -410,6 +417,12 @@ class MSO4Acquisition(util.DisableNewAttr):
 		self.sc.write(f'WFMOutpre:BYT_Or {value}')
 
 	@property
+	def is_big_endian(self) -> bool:
+		'''Return True if the byte order is big endian, False otherwise.
+		'''
+		return self.wfm_byte_order == 'msb'
+
+	@property
 	def curvestream(self) -> bool:
 		'''Enable or disable curvestream mode.
 		Cached
@@ -450,3 +463,8 @@ class MSO4Acquisition(util.DisableNewAttr):
 			return
 		self._cached_fast_acq = value
 		self.sc.write(f'ACQuire:FASTAcq:STATE {int(value)}')
+
+	def get_datatype(self) -> BINARY_DATATYPES:
+		'''Get the data type of the binary waveform data in struct.pack form. Does not return endianess.
+		'''
+		return self.wfm_datatypes[self.wfm_byte_nr][self.wfm_binary_format]
