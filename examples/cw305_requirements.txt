@@ -1,0 +1,6 @@
+chipwhisperer
+matplotlib
+ipython
+jupyter
+jupyterlab
+tqdm
