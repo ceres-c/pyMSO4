@@ -327,7 +327,7 @@ class MSO4Acquisition(util.DisableNewAttr):
 		Raises:
 			ValueError: Invalid encoding
 		'''
-		if not self._cached_wfm_encoding:
+		if self._cached_wfm_encoding is None:
 			self._cached_wfm_encoding = self.sc.query('WFMOutpre:ENCdg?').strip().lower()
 		return self._cached_wfm_encoding
 	@wfm_encoding.setter
@@ -354,7 +354,7 @@ class MSO4Acquisition(util.DisableNewAttr):
 		Raises:
 			ValueError: Invalid data format
 		'''
-		if not self._cached_wfm_format:
+		if self._cached_wfm_format is None:
 			self._cached_wfm_format = self.sc.query('WFMOutpre:BN_Fmt?').strip().lower()
 		return self._cached_wfm_format
 	@wfm_binary_format.setter
@@ -376,7 +376,7 @@ class MSO4Acquisition(util.DisableNewAttr):
 		:Setter: Set the number of bytes per data point (int)
 			NOTE: Check the programmer manual for valid values § WFMOutpre:BYT_Nr. If unsure, clear the cache with :code:`scope._clear_cache()` and read back the value
 		'''
-		if not self._cached_wfm_byte_nr:
+		if self._cached_wfm_byte_nr is None:
 			self._cached_wfm_byte_nr = int(self.sc.query('WFMOutpre:BYT_Nr?').strip())
 		return self._cached_wfm_byte_nr
 	@wfm_byte_nr.setter
@@ -404,7 +404,7 @@ class MSO4Acquisition(util.DisableNewAttr):
 		Raises:
 			ValueError: Invalid byte order
 		'''
-		if not self._cached_wfm_order:
+		if self._cached_wfm_order is None:
 			self._cached_wfm_order = self.sc.query('WFMOutpre:BYT_Or?').strip().lower()
 		return self._cached_wfm_order
 	@wfm_byte_order.setter
@@ -437,8 +437,6 @@ class MSO4Acquisition(util.DisableNewAttr):
 		return self._cached_curvestream
 	@curvestream.setter
 	def curvestream(self, value: bool):
-		if self._cached_curvestream == value:
-			return
 		self._cached_curvestream = value
 		if value:
 			self.sc.write('CURVestream?')

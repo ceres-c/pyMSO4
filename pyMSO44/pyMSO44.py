@@ -27,8 +27,12 @@ class MSO4:
 
 	sources = ['ch1', 'ch2', 'ch3', 'ch4'] # TODO add MATH_, REF_, CH_D...
 	# See programmer manual § DATa:SOUrce
+	_pyVisa_methods = ['write', 'write_ascii_values', 'write_binary_values',
+		'read_bytes', 'read', 'read_ascii_values', 'read_binary_values', 'query',
+		'query_ascii_values', 'query_binary_values'] # Ignore write_raw and read_raw as
+		# they are used in all the other methods, thus everything would be printed twice
 
-	def __init__(self, trig_type: MSO4Triggers = MSO4EdgeTrigger, timeout: float = 2000.0):
+	def __init__(self, trig_type: MSO4Triggers = MSO4EdgeTrigger, timeout: float = 2000.0, debug: bool = False):
 		'''Creates a new MSO4 object.
 
 		Args:
@@ -48,6 +52,7 @@ class MSO4:
 
 		self.wfm_data_points: Sequence = []
 
+		self.debug = debug
 		self.connect_status = False
 
 	def clear_cache(self) -> None:
@@ -112,24 +117,29 @@ class MSO4:
 			OSError: Invalid vendor or model returned from scope
 		'''
 
+		def _decorator_print(func):
+			'''Decorator added to pyVisa functions to debug what is happening at a lower level.
+			It is a nested function to have access to the pyMSO4 class instance context
+			'''
+			def wrapper(*args, **kwargs):
+				if self.debug: # This is why I declared here
+					print("[D]", func.__name__, *args)
+				return func(*args, **kwargs)
+			return wrapper
+
 		if not ip:
 			raise ValueError('IP address must be specified')
 
 		self.rm = visa.ResourceManager()
 		self.sc = self.rm.open_resource(f'TCPIP0::{ip}::inst0::INSTR') # type: ignore
 
-		############## DEBUGGING CODE ##############
-		def decorator_print(func):
-			def wrapper(*args, **kwargs):
-				print("[D]", func.__name__, *args)
-				return func(*args, **kwargs)
-			return wrapper
-		for attr in ['read', 'write', 'query']:
-			setattr(self.sc, attr, decorator_print(getattr(self.sc, attr)))
-		############## END DEBUGGING CODE ##############
+		# Enable debugging decorator
+		for method in self._pyVisa_methods:
+			setattr(self.sc, method, _decorator_print(getattr(self.sc, method)))
 
 		# Set visa timeout
 		self.timeout = self._timeout
+		self.reset()
 
 		sc_id = self._id_scope()
 		if sc_id['vendor'] != 'TEKTRONIX':
@@ -193,8 +203,11 @@ class MSO4:
 		'''
 		self.sc.write("*RST")
 		self.sc.write("*OPC?")
-		while self.sc.stb == 0:
+		# Technically we could use "*OPC" to avoid the scope sending data on the bus, but
+		# that actually does not work, so we need to use "*OPC?" and read
+		while self.sc.read().strip() != "1":
 			pass
+		self.sc.clear() # Discard the `1` sent by the scope
 		self.sc.write("*CLS")
 
 	def cls(self) -> None:
