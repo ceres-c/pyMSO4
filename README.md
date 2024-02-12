@@ -32,3 +32,15 @@ source venv/bin/activate
 cd examples
 python3 cw305_endurance.py
 ```
+
+# Troubleshooting
+The MSO44 is an interesting beast, and sometimes it will not behave as
+expected, nor as the documentation says. Here are some tips to get it to work.
+
+1. **Lots of timeouts in VISA communication**
+
+Use the `mso4.reboot()` method to reset the scope UI and VISA server.
+
+2. **Unable to connect to the device (pyVisa not setting up the connection)**
+
+Reboot the scope through the front button.
