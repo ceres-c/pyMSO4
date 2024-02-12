@@ -118,6 +118,16 @@ class MSO4:
 		self.rm = visa.ResourceManager()
 		self.sc = self.rm.open_resource(f'TCPIP0::{ip}::inst0::INSTR') # type: ignore
 
+		############## DEBUGGING CODE ##############
+		def decorator_print(func):
+			def wrapper(*args, **kwargs):
+				print("[D]", func.__name__, *args)
+				return func(*args, **kwargs)
+			return wrapper
+		for attr in ['read', 'write', 'query']:
+			setattr(self.sc, attr, decorator_print(getattr(self.sc, attr)))
+		############## END DEBUGGING CODE ##############
+
 		# Set visa timeout
 		self.timeout = self._timeout
 
