@@ -60,7 +60,7 @@ class MSO4TriggerBase(util.DisableNewAttr):
 
 	def force(self):
 		'''Force the trigger to occur immediately'''
-		self.sc.assert_trigger()
+		self.sc.write('TRIGGER FORCe')
 
 	def _set_type(self, typ: str) -> None:
 		self.sc.write(f'TRIGGER:{self.event}:TYPE {typ}')

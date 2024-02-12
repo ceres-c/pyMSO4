@@ -3,7 +3,7 @@ import time
 
 import matplotlib.pyplot as plt
 import chipwhisperer as cw
-import pyMSO44
+import pyMSO4
 import pyvisa as visa
 from tqdm import tqdm
 
@@ -11,10 +11,10 @@ TIMEOUT = 20000
 TIMEOUT_SHORT = 200 # Used when running the acquisition loop and don't want to waste time on a missed trigger
 SCOPE_ADDR = "192.168.1.140"
 
-mso44 = pyMSO44.MSO4(trig_type=pyMSO44.MSO4EdgeTrigger, debug=False)
+mso44 = pyMSO4.MSO4(trig_type=pyMSO4.MSO4EdgeTrigger, debug=False)
 mso44.con(ip=SCOPE_ADDR)
 
-def prep(scope: pyMSO44.MSO4):
+def prep(scope: pyMSO4.MSO4):
 	mso44.timeout = TIMEOUT
 	scope.display = False # NOTE: if True, you need to increase TIMEOUT_SHORT above
 

@@ -1,19 +1,15 @@
-import time
 from typing import Sequence
 
 import pyvisa as visa
 
-
 from .triggers import MSO4Triggers, MSO4EdgeTrigger
 from .acquisition import MSO4Acquisition
 from .channel import MSO4AnalogChannel
-from . import scope_logger
 
 # TODO:
 # * Implement the other trigger types (mostly sequence)
 # * Change binary format to 8 bit when in low res mode?
 # * Add note about starting off with a freshly booted machine to avoid issues
-# * Add note in readme about "smart" Dell docking stations and ethernet
 
 class MSO4:
 	'''Tektronix MSO 4-Series scope object. This is not usable until `con()` is called.

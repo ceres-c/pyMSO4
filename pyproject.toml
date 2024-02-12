@@ -1,10 +1,10 @@
 [project]
-name = "pyMSO44"
+name = "pyMSO4"
 version = "0.0.1"
 authors = [
   { name="Federico Cerutti", email="federico@ceres-c.it" },
 ]
-description = "Tektronix MSO44 VISA library"
+description = "Tektronix MSO4 VISA library"
 readme = "README.md"
 requires-python = ">=3"
 classifiers = [
@@ -12,10 +12,14 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+  'pyvisa',
+  'pyvisa_py'
+]
 
 [project.urls]
-"Homepage" = "https://github.com/ceres-c/pyMSO44"
-"Bug Tracker" = "https://github.com/ceres-c/pyMSO44/issues"
+"Homepage" = "https://github.com/ceres-c/pyMSO4"
+"Bug Tracker" = "https://github.com/ceres-c/pyMSO4/issues"
 
 [build-system]
 requires = ["hatchling"]
