@@ -1,7 +1,6 @@
-from typing import Sequence
-
 import pyvisa as visa
 
+from . import scope_logger
 from .triggers import MSO4Triggers, MSO4EdgeTrigger
 from .acquisition import MSO4Acquisition
 from .channel import MSO4AnalogChannel
@@ -12,12 +11,9 @@ from .channel import MSO4AnalogChannel
 # * Add note about starting off with a freshly booted machine to avoid issues
 
 class MSO4:
-	'''Tektronix MSO 4-Series scope object. This is not usable until `con()` is called.
-	'''
+	'''Tektronix MSO 4-Series scope object. This is not usable until :func:`MSO4.con()` is called.'''
 
-	sources = ['ch1', 'ch2', 'ch3', 'ch4'] # TODO add MATH_, REF_, CH_D...
-	# See programmer manual § DATa:SOUrce
-	_pyVisa_methods = ['write', 'write_ascii_values', 'write_binary_values',
+	_pyvisa_methods = ['write', 'write_ascii_values', 'write_binary_values',
 		'read_bytes', 'read', 'read_ascii_values', 'read_binary_values', 'query',
 		'query_ascii_values', 'query_binary_values'] # Ignore write_raw and read_raw as
 		# they are used in all the methods above, thus everything would be printed twice
@@ -30,23 +26,29 @@ class MSO4:
 			timeout: Timeout (in ms) for each VISA operation, including the CURVE? query.
 			debug: Enable printing each VISA operation to the console
 		'''
+		#: pyvisa ResourceManager object used tp setup the connection
 		self.rm: visa.ResourceManager = None # type: ignore
+		#: pyvisa MessageBasedResource object used to communicate with the scope
 		self.sc: visa.resources.MessageBasedResource = None # type: ignore
 
 		# Local storage for the internal trigger instance
 		self._trig: MSO4Triggers = trig_type
 		self._timeout = timeout # Never read this value, use self.sc.timeout instead, this is only temporary storage until `con()` is called
-		self.acq: MSO4Acquisition = None # type: ignore
 
+		#: MSO4Acquisition instance used to control the acquisition settings
+		self.acq: MSO4Acquisition = None # type: ignore
+		#: List of MSO4AnalogChannel instances used to control the analog channels
 		self.ch_a: list[MSO4AnalogChannel] = []
 		self.ch_a.append(None) # Dummy channel to make indexing easier # type: ignore
 
-		self.debug = debug
-		self.connect_status = False
+		#: Debug mode
+		self.debug: bool = debug
+		#: Current connection status
+		self.connect_status: bool = False
 
 	def clear_cache(self) -> None:
 		'''Resets the local configuration cache so that values will be fetched from
-		the scope. Applies to all objects (trigger, acquisition, channels).
+		the scope. Is recursively called on all subobjects (trigger, acquisition, channels).
 
 		This is useful when the scope configuration is (potentially) changed externally.
 		'''
@@ -86,14 +88,21 @@ class MSO4:
 			'firmware': s[3]
 		}
 
-	def con(self, ip: str = '', **kwargs) -> bool:
+	def con(self, ip: str = '', usb_addr: str = '', open_timeout: int = 2000, **kwargs) -> bool:
 		'''Connects to scope and resets it. It will also:
 			- timeout = timeout from init
 			- clear event queue, standard event status register, status byte register
 
+		To obtain the USB VISA resource string, you can use the list command in ``pyvisa-shell``
+		(binary provided by pyvisa), see
+		https://pyvisa.readthedocs.io/en/latest/introduction/names.html#visa-resource-syntax-and-examples
+		for more information.
+
 		Args:
 			ip (str): IP address of scope
-			kwargs: Additional arguments to pass to pyvisa.ResourceManager.open_resource
+			usb_addr (str): VISA resource string for USB connection
+			open_timeout (int): Timeout for opening the VISA resource in ms (default 2000)
+			kwargs: Additional arguments to pass to ``pyvisa.ResourceManager.open_resource``
 
 		Returns:
 			True if successful, False otherwise
@@ -104,7 +113,7 @@ class MSO4:
 		'''
 
 		def _decorator_print(func):
-			'''Decorator added to pyVisa functions to debug what is happening at a lower level.
+			'''Decorator added to pyvisa functions to debug what is happening at a lower level.
 			It is a nested function to have access to the pyMSO4 class instance context
 			'''
 			def wrapper(*args, **kwargs):
@@ -113,14 +122,24 @@ class MSO4:
 				return func(*args, **kwargs)
 			return wrapper
 
-		if not ip:
-			raise ValueError('IP address must be specified')
+		if self.connect_status:
+			try:
+				self.dis()
+			except Exception:
+				scope_logger.warning('Failed to disconnect from scope. Trying to connect anyway...')
 
 		self.rm = visa.ResourceManager()
-		self.sc = self.rm.open_resource(f'TCPIP0::{ip}::inst0::INSTR', **kwargs) # type: ignore
+		if ip and usb_addr:
+			raise ValueError('Only one of IP address or USB resource string must be specified')
+		elif ip:
+			self.sc = self.rm.open_resource(f'TCPIP0::{ip}::inst0::INSTR', open_timeout=open_timeout, **kwargs) # type: ignore
+		elif usb_addr:
+			self.sc = self.rm.open_resource(usb_addr, open_timeout=open_timeout, **kwargs) # type: ignore
+		else:
+			raise ValueError('Either IP address or USB resource string must be specified')
 
 		# Apply debugging decorator
-		for method in self._pyVisa_methods:
+		for method in self._pyvisa_methods:
 			setattr(self.sc, method, _decorator_print(getattr(self.sc, method)))
 
 		# Set visa timeout
@@ -141,9 +160,9 @@ class MSO4:
 
 		# Init additional scope classes
 		self.trigger = self._trig
-		self.acq = MSO4Acquisition(self.sc)
 		ch_a_num = int(sc_id['model'][-1]) # Hacky, I know, but even Tektronix people suggest it
 		# Source: https://forum.tek.com/viewtopic.php?f=568&t=135345
+		self.acq = MSO4Acquisition(self.sc, ch_a_num)
 		for ch_a in range(ch_a_num):
 			self.ch_a.append(MSO4AnalogChannel(self.sc, ch_a + 1))
 
@@ -278,3 +297,21 @@ class MSO4:
 	@display.setter
 	def display(self, value: bool):
 		self.sc.write(f'DISplay:WAVEform {int(value)}')
+
+def usb_reboot(usb_addr: str) -> bool:
+	'''Reboots the scope when it is not reachable through TCP/IP.
+
+	Args:
+		usb_addr: VISA resource string for USB connection (see :func:`MSO4.con()` for more information)
+	'''
+	rm = visa.ResourceManager()
+	sc = rm.open_resource(usb_addr)
+	sc.write('SCOPEApp REBOOT')
+	try:
+		sc.close()
+	except Exception:
+		# Don't act on it, because it should be rebooting anyway now
+		scope_logger.warning('Failed to close USB VISA scope during reboot')
+		return False
+	rm.close()
+	return True

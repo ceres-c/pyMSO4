@@ -1,3 +1,4 @@
+import re
 from typing import Literal
 import pyvisa
 
@@ -10,44 +11,35 @@ BINARY_DATATYPES = Literal[
 ]
 
 class MSO4Acquisition(util.DisableNewAttr):
-	'''Handle all the properties related to waveform acquisition.
-
-	Attributes: # TODO update this list
-		ch<n> (MSO4Vertical): The vertical channel settings for channel n.
-		mode (str): The acquisition mode of the scope.
-		stop_after (str): Wether the instrument continually acquires acquisitions or acquires a single sequence
-		num_seq (int): In single sequence acquisition mode, specify the number of acquisitions or measurements that comprise the sequence.
-		display (bool): Enable or disable the waveform display on the scope display.
-		horiz_record_length (int): The horizontal record length of the waveform.
-		wfm_src (list[str]): The analog FlexChannel(s) source(s) of the waveform.
-		wfm_start (int): The starting data point for waveform transfer.
-		wfm_stop (int): The last data point that will be transferred when using the CURVe? query.
-		wfm_encoding (str): The encoding of the waveform data.
-		wfm_binary_format (str): The data format of binary waveform data.
-		wfm_byte_nr (int): The number of bytes per data point in the waveform.
-		wfm_byte_order (str): The byte order of the waveform data.
-	'''
+	'''Handle all the properties related to waveform acquisition.'''
 
 	# See programmer manual for explanation of these
-	modes = ['sample', 'peakdetect', 'hires', 'average', 'envelope']
-	sources = ['ch1', 'ch2', 'ch3', 'ch4'] # TODO how to retrieve this from the scope?
-	stop_afters = ['sequence', 'runstop']
-	horiz_modes = ['auto', 'manual']
-	wfm_encodings = ['binary', 'ascii']
-	wfm_binary_formats = ['ri', 'rp', 'fp']
-	wfm_byte_nrs = [1, 2, 8] # Programmer manual § WFMOutpre:BYT_Nr
-	wfm_byte_orders = ['lsb', 'msb']
-	wfm_datatypes: dict[int, dict[str, BINARY_DATATYPES]] = { # Got these from the programmer manual § WFMOutpre:BN_Fmt
+	_modes = ['sample', 'peakdetect', 'hires', 'average', 'envelope']
+	_stop_afters = ['sequence', 'runstop']
+	_horiz_modes = ['auto', 'manual']
+	_wfm_encodings = ['binary', 'ascii']
+	_wfm_binary_formats = ['ri', 'rp', 'fp']
+	_wfm_byte_nrs = [1, 2, 8] # Programmer manual § WFMOutpre:BYT_Nr
+	_wfm_byte_orders = ['lsb', 'msb']
+	_wfm_datatypes: dict[int, dict[str, BINARY_DATATYPES]] = { # Got these from the programmer manual § WFMOutpre:BN_Fmt
 		1: {'ri': 'b', 'rp': 'B'},
 		2: {'ri': 'h', 'rp': 'H'},
 		4: {'ri': 'i', 'rp': 'I', 'fp': 'f'},
 		8: {'ri': 'q', 'rp': 'Q', 'fp': 'd'},
 	}
 
-	def __init__(self, res: pyvisa.resources.MessageBasedResource):
+	def __init__(self, res: pyvisa.resources.MessageBasedResource, ch_a_count: int):
+		'''Create a new acquisition object.
+
+		Args:
+			res: The VISA resource object
+			ch_a_count: The number of analog channels available on the scope (1-based, so 4 if the scope has 4 channels)
+		'''
+
 		super().__init__()
 
 		self.sc: pyvisa.resources.MessageBasedResource = res
+		self._ch_a_count: int = ch_a_count
 
 		self._cached_wfm_encoding = None
 		self._cached_wfm_format = None
@@ -87,59 +79,62 @@ class MSO4Acquisition(util.DisableNewAttr):
 
 	@property
 	def mode(self) -> str:
-		'''The acquisition mode of the scope.
-		Not cached
+		'''The acquisition mode of the scope. Valid modes are:
+			* ``sample``: SAMple specifies that the displayed data point value is the
+			  sampled value that is taken during the acquisition interval
+			* ``peakdetect``: PEAKdetect specifies the display of high-low range of the
+			  samples taken from a single waveform acquisition.
+			* ``hires``: HIRes specifies Hi Res mode where the displayed data point
+			  value is the average of all the samples taken during the acquisition interval
+			* ``average``: AVErage specifies averaging mode, in which the resulting
+			  waveform shows an average of SAMple data points from several separate
+			  waveform acquisitions.
+			* ``envelope``: ENVelope specifies envelope mode, where the resulting waveform
+			  displays the range of PEAKdetect from continued waveform acquisitions.
 
-		:Getter: Return the acquisition mode (str)
+		*Not cached*
 
-		:Setter: Set the acquisition mode. Valid modes are:
-			* 'sample': SAMple specifies that the displayed data point value is the
-			sampled value that is taken during the acquisition interval
-			* 'peakdetect': PEAKdetect specifies the display of high-low range of the
-			samples taken from a single waveform acquisition.
-			* 'hires': HIRes specifies Hi Res mode where the displayed data point
-			value is the average of all the samples taken during the acquisition interval
-			* 'average': AVErage specifies averaging mode, in which the resulting
-			waveform shows an average of SAMple data points from several separate
-			waveform acquisitions.
-			* 'envelope': ENVelope specifies envelope mode, where the resulting waveform
-			displays the range of PEAKdetect from continued waveform acquisitions.
+		:Getter: Return the acquisition mode
+
+		:Setter: Set the acquisition mode
 		'''
 		return self.sc.query('ACQuire:MODe?').strip().lower()
 	@mode.setter
 	def mode(self, value: str):
-		if value.lower() not in self.modes:
-			raise ValueError(f'Invalid mode {value}. Valid modes are {self.modes}')
+		if value.lower() not in self._modes:
+			raise ValueError(f'Invalid mode {value}. Valid modes are {self._modes}')
 		self.sc.write(f'ACQuire:MODe {value}')
 
 	@property
 	def stop_after(self) -> str:
-		'''Wether the instrument continually acquires acquisitions or acquires a single sequence
-		Not cached
+		'''Wether the instrument continually acquires waves or acquires a single sequence. Valid modes are:
+			* ``sequence``: specifies that the next acquisition will be a single-sequence acquisition
+			* ``runstop``: specifies that the instrument will continually acquire data, if
+			  ACQuire:STATE is turned on.
 
-		:Getter: Return the acquisition mode (str)
+		*Not cached*
 
-		:Setter: Set the acquisition mode. Valid modes are:
-			* 'sequence': specifies that the next acquisition will be a single-sequence acquisition
-			* 'runstop': specifies that the instrument will continually acquire data, if
-			ACQuire:STATE is turned on.
+		:Getter: Return the acquisition mode
+
+		:Setter: Set the acquisition mode.
 		'''
 		return self.sc.query('ACQuire:STOPAfter?').strip().lower()
 	@stop_after.setter
 	def stop_after(self, value: str):
-		if value.lower() not in self.stop_afters:
-			raise ValueError(f'Invalid stop after {value}. Valid stop afters are {self.stop_afters}')
+		if value.lower() not in self._stop_afters:
+			raise ValueError(f'Invalid stop after {value}. Valid stop afters are {self._stop_afters}')
 		self.sc.write(f'ACQuire:STOPAfter {value}')
 
 	@property
 	def num_seq(self) -> int:
 		'''In single sequence acquisition mode, specify the number of acquisitions or measurements
 		that comprise the sequence.
-		Not cached
 
-		:Getter: Return the number of acquisitions or measurements (int)
+		*Not cached*
 
-		:Setter: Set the number of acquisitions or measurements (int)
+		:Getter: Return the number of acquisitions or measurements
+
+		:Setter: Set the number of acquisitions or measurements
 		'''
 		return int(self.sc.query('ACQuire:SEQuence:NUMSEQuence?').strip())
 	@num_seq.setter
@@ -153,31 +148,33 @@ class MSO4Acquisition(util.DisableNewAttr):
 
 	@property
 	def horiz_mode(self) -> str:
-		'''The horizontal operating mode.
-		Not cached
+		'''The horizontal operating mode. Valid values are:
+			* ``auto``: automatically adjusts the sample rate and record length to provide
+			  a high acquisition rate in Fast Acq or signal fidelity in analysis
+			* ``manual``: lets you change the sample rate, horizontal scale, and record length.
+			  These values interact. For example, when you change record length
+			  then the horizontal scale also changes.
 
-		:Getter: Return the mode (str)
+		*Not cached*
 
-		:Setter: Set the mode. Valid values are:
-			* 'auto': automatically adjusts the sample rate and record length to provide
-					  a high acquisition rate in Fast Acq or signal fidelity in analysis
-			* 'manual': lets you change the sample rate, horizontal scale, and record length.
-						These values interact. For example, when you change record length
-						then the horizontal scale also changes.
+		:Getter: Return the mode
+
+		:Setter: Set the mode
 		'''
 		return self.sc.query('HORizontal:MODe?').strip().lower()
 	@horiz_mode.setter
 	def horiz_mode(self, value: str):
-		if value.lower() not in self.horiz_modes:
-			raise ValueError(f'Invalid mode {value}. Valid modes are {self.horiz_modes}')
+		if value.lower() not in self._horiz_modes:
+			raise ValueError(f'Invalid mode {value}. Valid modes are {self._horiz_modes}')
 		self.sc.write(f'HORizontal:MODe {value}')
 
 	@property
 	def horiz_sample_rate(self) -> float:
 		'''The horizontal sample rate of the waveform.
-		Not cached
 
-		:Getter: Return the sample rate in Hz (float)
+		*Not cached*
+
+		:Getter: Return the sample rate in Hz
 
 		:Setter: Set the sample rate in Hz (int or float)
 		'''
@@ -195,9 +192,10 @@ class MSO4Acquisition(util.DisableNewAttr):
 	@property
 	def horiz_scale(self) -> float:
 		'''The horizontal scale of the waveform.
-		Not cached
 
-		:Getter: Return the scale in s (float)
+		*Not cached*
+
+		:Getter: Return the scale in s
 
 		:Setter: Set the scale in s (int or float)
 		'''
@@ -216,9 +214,10 @@ class MSO4Acquisition(util.DisableNewAttr):
 	def horiz_pos(self) -> float:
 		'''The horizontal position of the waveform in percent of the screen:
 		0% is the left edge of the screen and 100% is the right edge of the screen.
-		Not cached
 
-		:Getter: Return the position in % (float)
+		*Not cached*
+
+		:Getter: Return the position in %
 
 		:Setter: Set the position in % (int or float)
 		'''
@@ -238,11 +237,12 @@ class MSO4Acquisition(util.DisableNewAttr):
 	@property
 	def horiz_record_length(self) -> int:
 		'''The horizontal record length of the waveform.
-		Not cached
 
-		:Getter: Return the record length (int)
+		*Not cached*
 
-		:Setter: Set the record length (int)
+		:Getter: Return the record length
+
+		:Setter: Set the record length
 		'''
 		return int(self.sc.query('HORizontal:MODe:RECOrdlength?').strip())
 	@horiz_record_length.setter
@@ -253,33 +253,32 @@ class MSO4Acquisition(util.DisableNewAttr):
 
 	@property
 	def wfm_src(self) -> list[str]:
-		'''Source of the retrieved waveform (analog FlexChannel(s) source(s)).
-		Not cached
+		'''Source of the retrieved waveform (analog FlexChannel(s) source(s)). Valid values are ``chN`` (Channel n).
 
-		:Getter: Return the source (str)
+		*Not cached*
 
-		:Setter: Set the source. Valid values are:
-			* 'ch1': Channel 1
-			* 'ch2': Channel 2
-			* 'ch3': Channel 3
-			* 'ch4': Channel 4
+		:Getter: Return the source
+
+		:Setter: Set the source
 		'''
 		return self.sc.query('DATa:SOUrce?').strip().split()
 	@wfm_src.setter
 	def wfm_src(self, value: list[str]):
 		for v in value:
-			if v.lower() not in self.sources:
-				raise ValueError(f'Invalid source {v}. Valid sources are {self.sources}')
+			matches = re.match(r'ch(\d+)', v, re.IGNORECASE)
+			if not matches or int(matches.group(1)) > self._ch_a_count:
+				raise ValueError(f'Invalid source {v}. Valid sources are ch1-ch{self._ch_a_count}')
 		self.sc.write(f'DATa:SOUrce {" ".join(value)}')
 
 	@property
 	def wfm_start(self) -> int:
 		'''The starting data point for waveform transfer.
-		Not cached
 
-		:Getter: Return the start index (int)
+		*Not cached*
 
-		:Setter: Set the start index (int)
+		:Getter: Return the start index
+
+		:Setter: Set the start index
 		'''
 		return int(self.sc.query('DATa:STARt?').strip())
 	@wfm_start.setter
@@ -290,12 +289,13 @@ class MSO4Acquisition(util.DisableNewAttr):
 
 	@property
 	def wfm_stop(self) -> int:
-		'''The last data point that will be transferred when using the CURVe? query.
-		Not cached
+		'''The last data point that will be transferred when retrieving the waveform.
 
-		:Getter: Return the stop index (int)
+		*Not cached*
 
-		:Setter: Set the stop index (int)
+		:Getter: Return the stop index
+
+		:Setter: Set the stop index
 		'''
 		return int(self.sc.query('DATa:STOP?').strip())
 	@wfm_stop.setter
@@ -307,22 +307,24 @@ class MSO4Acquisition(util.DisableNewAttr):
 	@property
 	def wfm_len(self) -> int:
 		'''The number of data points in the waveform.
-		Not cached
 
-		:Getter: Return the number of data points (int)
+		*Not cached*
+
+		:Getter: Return the number of data points
 		'''
 		return int(self.sc.query('WFMOutpre:NR_Pt?').strip())
 
 	@property
 	def wfm_encoding(self) -> str:
-		'''The encoding of the waveform data.
-		Cached
+		'''The encoding of the waveform data.  Valid values are:
+			* ``binary``: Binary
+			* ``ascii``: ASCII
 
-		:Getter: Return the encoding (str)
+		*Cached*
 
-		:Setter: Set the encoding. Valid values are:
-			* 'binary': Binary
-			* 'ascii': ASCII
+		:Getter: Return the encoding
+
+		:Setter: Set the encoding
 
 		Raises:
 			ValueError: Invalid encoding
@@ -332,8 +334,8 @@ class MSO4Acquisition(util.DisableNewAttr):
 		return self._cached_wfm_encoding
 	@wfm_encoding.setter
 	def wfm_encoding(self, value: str):
-		if value.lower() not in self.wfm_encodings:
-			raise ValueError(f'Invalid encoding {value}. Valid encodings are {self.wfm_encodings}')
+		if value.lower() not in self._wfm_encodings:
+			raise ValueError(f'Invalid encoding {value}. Valid encodings are {self._wfm_encodings}')
 		if self._cached_wfm_encoding == value:
 			return
 		self._cached_wfm_encoding = value
@@ -341,15 +343,16 @@ class MSO4Acquisition(util.DisableNewAttr):
 
 	@property
 	def wfm_binary_format(self) -> str:
-		'''The data format of binary waveform data.
-		Cached
+		'''The data format of binary waveform data. Valid values are:
+			* ``ri``: Signed integer
+			* ``rp``: Unsigned integer
+			* ``fp``: Floating point
 
-		:Getter: Return the data format (str)
+		*Cached*
 
-		:Setter: Set the data format. Valid values are:
-			* 'ri': Signed integer
-			* 'rp': Unsigned integer
-			* 'fp': Floating point
+		:Getter: Return the data format
+
+		:Setter: Set the data format
 
 		Raises:
 			ValueError: Invalid data format
@@ -359,8 +362,8 @@ class MSO4Acquisition(util.DisableNewAttr):
 		return self._cached_wfm_format
 	@wfm_binary_format.setter
 	def wfm_binary_format(self, value: str):
-		if value.lower() not in self.wfm_binary_formats:
-			raise ValueError(f'Invalid binary format {value}. Valid binary formats are {self.wfm_binary_formats}')
+		if value.lower() not in self._wfm_binary_formats:
+			raise ValueError(f'Invalid binary format {value}. Valid binary formats are {self._wfm_binary_formats}')
 		if self._cached_wfm_format == value:
 			return
 		self._cached_wfm_format = value
@@ -369,11 +372,12 @@ class MSO4Acquisition(util.DisableNewAttr):
 	@property
 	def wfm_byte_nr(self) -> int:
 		'''The number of bytes per data point in the waveform.
-		Cached
 
-		:Getter: Return the number of bytes per data point (int)
+		*Cached*
 
-		:Setter: Set the number of bytes per data point (int)
+		:Getter: Return the number of bytes per data point
+
+		:Setter: Set the number of bytes per data point
 			NOTE: Check the programmer manual for valid values § WFMOutpre:BYT_Nr. If unsure, clear the cache with :code:`scope._clear_cache()` and read back the value
 		'''
 		if self._cached_wfm_byte_nr is None:
@@ -383,8 +387,8 @@ class MSO4Acquisition(util.DisableNewAttr):
 	def wfm_byte_nr(self, value: int):
 		if not isinstance(value, int):
 			raise ValueError(f'Invalid number of bytes per data point {value}. Must be an int.')
-		if value not in self.wfm_byte_nrs:
-			raise ValueError(f'Invalid number of bytes per data point {value}. Valid values are {self.wfm_byte_nrs}')
+		if value not in self._wfm_byte_nrs:
+			raise ValueError(f'Invalid number of bytes per data point {value}. Valid values are {self._wfm_byte_nrs}')
 		if self._cached_wfm_byte_nr == value:
 			return
 		self._cached_wfm_byte_nr = value
@@ -392,14 +396,15 @@ class MSO4Acquisition(util.DisableNewAttr):
 
 	@property
 	def wfm_byte_order(self) -> str:
-		'''The byte order of the waveform data.
-		Cached
+		'''The byte order of the waveform data. Valid values are:
+			* ``lsb``: Least significant byte first
+			* ``msb``: Most significant byte first
 
-		:Getter: Return the byte order (str)
+		*Cached*
 
-		:Setter: Set the byte order. Valid values are:
-			* 'lsb': Least significant byte first
-			* 'msb': Most significant byte first
+		:Getter: Return the byte order
+
+		:Setter: Set the byte order
 
 		Raises:
 			ValueError: Invalid byte order
@@ -409,8 +414,8 @@ class MSO4Acquisition(util.DisableNewAttr):
 		return self._cached_wfm_order
 	@wfm_byte_order.setter
 	def wfm_byte_order(self, value: str):
-		if value.lower() not in self.wfm_byte_orders:
-			raise ValueError(f'Invalid byte order {value}. Valid byte orders are {self.wfm_byte_orders}')
+		if value.lower() not in self._wfm_byte_orders:
+			raise ValueError(f'Invalid byte order {value}. Valid byte orders are {self._wfm_byte_orders}')
 		if self._cached_wfm_order == value:
 			return
 		self._cached_wfm_order = value
@@ -425,11 +430,12 @@ class MSO4Acquisition(util.DisableNewAttr):
 	@property
 	def curvestream(self) -> bool:
 		'''Enable or disable curvestream mode.
-		Cached
 
-		:Getter: Return the curvestream state (bool)
+		*Cached*
 
-		:Setter: Set the curvestream state (bool)
+		:Getter: Return the curvestream state
+
+		:Setter: Set the curvestream state
 		'''
 		if self._cached_curvestream is None:
 			self.sc.write('*CLS') # If we don't know, better disable it to be sure
@@ -446,11 +452,12 @@ class MSO4Acquisition(util.DisableNewAttr):
 	@property
 	def fast_acq(self) -> bool:
 		'''Enable or disable fast acquisition mode.
-		Cached
 
-		:Getter: Return the fast acquisition state (bool)
+		*Cached*
 
-		:Setter: Set the fast acquisition state (bool)
+		:Getter: Return the fast acquisition state
+
+		:Setter: Set the fast acquisition state
 		'''
 		if self._cached_fast_acq is None:
 			self._cached_fast_acq = bool(int(self.sc.query("ACQuire:FASTAcq:STATE?").strip()))
@@ -465,4 +472,4 @@ class MSO4Acquisition(util.DisableNewAttr):
 	def get_datatype(self) -> BINARY_DATATYPES:
 		'''Get the data type of the binary waveform data in struct.pack form. Does not return endianess.
 		'''
-		return self.wfm_datatypes[self.wfm_byte_nr][self.wfm_binary_format]
+		return self._wfm_datatypes[self.wfm_byte_nr][self.wfm_binary_format]
