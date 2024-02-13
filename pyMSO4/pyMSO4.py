@@ -13,12 +13,6 @@ from .channel import MSO4AnalogChannel
 
 class MSO4:
 	'''Tektronix MSO 4-Series scope object. This is not usable until `con()` is called.
-
-	Attributes:
-		rm: pyvisa.ResourceManager instance
-		sc: pyvisa.resources.MessageBasedResource instance
-		ch_a (list):  1-based list of MSO4AnalogChannel instances
-		trigger: MSO4Triggers type (not an instance)
 	'''
 
 	sources = ['ch1', 'ch2', 'ch3', 'ch4'] # TODO add MATH_, REF_, CH_D...
@@ -26,7 +20,7 @@ class MSO4:
 	_pyVisa_methods = ['write', 'write_ascii_values', 'write_binary_values',
 		'read_bytes', 'read', 'read_ascii_values', 'read_binary_values', 'query',
 		'query_ascii_values', 'query_binary_values'] # Ignore write_raw and read_raw as
-		# they are used in all the other methods, thus everything would be printed twice
+		# they are used in all the methods above, thus everything would be printed twice
 
 	def __init__(self, trig_type: MSO4Triggers = MSO4EdgeTrigger, timeout: float = 2000.0, debug: bool = False):
 		'''Creates a new MSO4 object.
@@ -34,6 +28,7 @@ class MSO4:
 		Args:
 			trig_type: The type of trigger to use. This can be changed later.
 			timeout: Timeout (in ms) for each VISA operation, including the CURVE? query.
+			debug: Enable printing each VISA operation to the console
 		'''
 		self.rm: visa.ResourceManager = None # type: ignore
 		self.sc: visa.resources.MessageBasedResource = None # type: ignore
@@ -46,14 +41,12 @@ class MSO4:
 		self.ch_a: list[MSO4AnalogChannel] = []
 		self.ch_a.append(None) # Dummy channel to make indexing easier # type: ignore
 
-		self.wfm_data_points: Sequence = []
-
 		self.debug = debug
 		self.connect_status = False
 
 	def clear_cache(self) -> None:
 		'''Resets the local configuration cache so that values will be fetched from
-		the scope.
+		the scope. Applies to all objects (trigger, acquisition, channels).
 
 		This is useful when the scope configuration is (potentially) changed externally.
 		'''
@@ -63,10 +56,14 @@ class MSO4:
 			self.acq.clear_caches()
 		for ch in self.ch_a:
 			ch.clear_caches()
-		self.wfm_data_points = []
 
-	def _id_scope(self) -> dict:
-		'''Reads identification string from scope
+	def _id_scope(self) -> dict[str, str]:
+		'''Reads identification string from scope and returns a dictionary with the
+		following keys:
+			- vendor
+			- model
+			- serial
+			- firmware
 
 		Raises:
 			Exception: Error when arming. This method catches these and
@@ -90,16 +87,9 @@ class MSO4:
 		}
 
 	def con(self, ip: str = '', **kwargs) -> bool:
-		'''Connects to scope and sets default configuration:
+		'''Connects to scope and resets it. It will also:
 			- timeout = timeout from init
-			- event reporting enabled on all events
 			- clear event queue, standard event status register, status byte register
-			- waveform start = 1
-			- waveform length = max (record length)
-			- waveform encoding = binary
-			- waveform binary format = signed integer
-			- waveform byte order = lsb
-			- waveform byte number = 2
 
 		Args:
 			ip (str): IP address of scope
@@ -127,14 +117,16 @@ class MSO4:
 			raise ValueError('IP address must be specified')
 
 		self.rm = visa.ResourceManager()
-		self.sc = self.rm.open_resource(f'TCPIP0::{ip}::inst0::INSTR') # type: ignore
+		self.sc = self.rm.open_resource(f'TCPIP0::{ip}::inst0::INSTR', **kwargs) # type: ignore
 
-		# Enable debugging decorator
+		# Apply debugging decorator
 		for method in self._pyVisa_methods:
 			setattr(self.sc, method, _decorator_print(getattr(self.sc, method)))
 
 		# Set visa timeout
 		self.timeout = self._timeout
+
+		# Reset scope
 		self.reset()
 
 		sc_id = self._id_scope()
@@ -165,6 +157,8 @@ class MSO4:
 		self.cls()
 		self.display = True
 
+		self.clear_cache()
+
 		self.acq = None # type: ignore
 
 		self.sc.close()
@@ -173,7 +167,7 @@ class MSO4:
 		self.rm = None # type: ignore
 
 		self.ch_a = []
-		self.wfm_data_points = []
+		self.ch_a.append(None) # Dummy channel to make indexing easier # type: ignore
 
 		self.connect_status = False
 
@@ -181,6 +175,7 @@ class MSO4:
 		'''Reboots the UI (as well as VISA server) on the scope. Note this will kill the current connection
 		'''
 		self.sc.write('SCOPEApp REBOOT')
+		self.clear_cache()
 		self.acq = None # type: ignore
 
 		self.sc.close()
@@ -189,10 +184,9 @@ class MSO4:
 		self.rm = None # type: ignore
 
 		self.ch_a = []
-		self.wfm_data_points = []
+		self.ch_a.append(None) # Dummy channel to make indexing easier # type: ignore
 
 		self.connect_status = False
-
 
 	def reset(self) -> None:
 		'''Resets scope to default settings.
@@ -235,7 +229,7 @@ class MSO4:
 		:Getter: Return the current trigger object instance (MSO4Triggers)
 
 		:Setter: Instantiate a new trigger object given a MSO4Triggers type.
-			Also configures the scope accordingly.
+			Also applies the configuration to the scope.
 		'''
 		return self._trig
 	@trigger.setter
@@ -246,12 +240,14 @@ class MSO4:
 
 	@property
 	def timeout(self) -> float:
-		'''Timeout (in ms) for each VISA operation, including the CURVE? query.
+		'''Timeout (in ms) for each VISA operation (also those that will stall on the scope end, like CURVE?).
 
 		:Getter: Return the number of milliseconds before a timeout (float)
 
 		:Setter: Set the timeout in milliseconds (float)
 		'''
+		if self.sc is None:
+			raise OSError('Scope is not connected. Connect it first...')
 		return self.sc.timeout
 	@timeout.setter
 	def timeout(self, value: float):
