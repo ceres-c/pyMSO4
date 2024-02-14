@@ -6,7 +6,7 @@ import pyvisa as visa
 
 TIMEOUT = 20000
 TIMEOUT_SHORT = 200 # Used when running the acquisition loop and don't want to waste time on a missed trigger
-TIMEOUT_REBOOT = 3*60*1000 # 3 minutes
+TIMEOUT_REBOOT = 5*60 # 5 minutes
 SCOPE_ADDR = "192.168.1.140"
 SCOPE_USB = "USB0::1689::1319::C019654::0::INSTR"
 
@@ -77,6 +77,7 @@ i = 0
 print('Capturing traces...')
 mso44.timeout = TIMEOUT_SHORT
 start = time.time()
+
 try:
 	while True:
 		try:
@@ -107,7 +108,14 @@ try:
 			# The scope might have crashed and is not reachable through TCP anymore, use USB to reboot it
 			print(f'\nGot VISA error: {e}')
 			pyMSO4.usb_reboot(pyMSO4.TEKTRONIX_USB_VID, pyMSO4.MSO44_USB_PID)
-			mso44.con(ip=SCOPE_ADDR, open_timeout=TIMEOUT_REBOOT)
+			start = time.time()
+			while time.time() - start < TIMEOUT_REBOOT:
+				try:
+					mso44 = pyMSO4.MSO4(trig_type=pyMSO4.MSO4EdgeTrigger, debug=False)
+					mso44.con(ip=SCOPE_ADDR)
+					break
+				except Exception:
+					pass
 			prep(mso44)
 			mso44.acq.curvestream = True
 			mso44.clear_buffers() # Good measure

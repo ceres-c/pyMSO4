@@ -62,7 +62,8 @@ class MSO4:
 		if self.acq:
 			self.acq.clear_caches()
 		for ch in self.ch_a:
-			ch.clear_caches()
+			if ch:
+				ch.clear_caches()
 
 	def _id_scope(self) -> dict[str, str]:
 		'''Reads identification string from scope and returns a dictionary with the
@@ -93,7 +94,7 @@ class MSO4:
 			'firmware': s[3]
 		}
 
-	def con(self, ip: str = '', usb_addr: str = '', open_timeout: int = 2000, **kwargs) -> bool:
+	def con(self, ip: str = '', usb_addr: str = '', **kwargs) -> bool:
 		'''Connects to scope and resets it. It will also:
 			- timeout = timeout from init
 			- clear event queue, standard event status register, status byte register
@@ -106,7 +107,6 @@ class MSO4:
 		Args:
 			ip (str): IP address of scope
 			usb_addr (str): VISA resource string for USB connection
-			open_timeout (int): Timeout for opening the VISA resource in ms (default 2000)
 			kwargs: Additional arguments to pass to ``pyvisa.ResourceManager.open_resource``
 
 		Returns:
@@ -137,9 +137,9 @@ class MSO4:
 		if ip and usb_addr:
 			raise ValueError('Only one of IP address or USB resource string must be specified')
 		elif ip:
-			self.sc = self.rm.open_resource(f'TCPIP0::{ip}::inst0::INSTR', open_timeout=open_timeout, **kwargs) # type: ignore
+			self.sc = self.rm.open_resource(f'TCPIP0::{ip}::inst0::INSTR', **kwargs) # type: ignore
 		elif usb_addr:
-			self.sc = self.rm.open_resource(usb_addr, open_timeout=open_timeout, **kwargs) # type: ignore
+			self.sc = self.rm.open_resource(usb_addr, **kwargs) # type: ignore
 		else:
 			raise ValueError('Either IP address or USB resource string must be specified')
 
