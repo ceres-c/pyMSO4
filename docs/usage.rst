@@ -23,9 +23,11 @@ Udev rules
    :linenos:
 
    sudo -E usermod -a -G dialout $USER
+   # Now logout
    cp 50-newae.rules /etc/udev/rules.d/50-newae.rules
    sudo systemctl stop ModemManager && sudo systemctl mask ModemManager
-   sudo systemctl reboot # Udevadm reload + unplug device should do too
+   sudo udevadm control --reload-rules && sudo udevadm trigger
+   # Did you logout?
 
 Package installation
 ^^^^^^^^^^^^^^^^^^^^
