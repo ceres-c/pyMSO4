@@ -106,7 +106,7 @@ try:
 		except visa.errors.VisaIOError as e:
 			# The scope might have crashed and is not reachable through TCP anymore, use USB to reboot it
 			print(f'\nGot VISA error: {e}')
-			pyMSO4.usb_reboot(SCOPE_USB)
+			pyMSO4.usb_reboot(pyMSO4.TEKTRONIX_USB_VID, pyMSO4.MSO44_USB_PID)
 			mso44.con(ip=SCOPE_ADDR, open_timeout=TIMEOUT_REBOOT)
 			prep(mso44)
 			mso44.acq.curvestream = True

@@ -1,4 +1,5 @@
 import pyvisa as visa
+import usbtmc
 
 from . import scope_logger
 from .triggers import MSO4Triggers, MSO4EdgeTrigger
@@ -9,6 +10,9 @@ from .channel import MSO4AnalogChannel
 # * Implement the other trigger types (mostly sequence)
 # * Change binary format to 8 bit when in low res mode?
 # * Add note about starting off with a freshly booted machine to avoid issues
+
+TEKTRONIX_USB_VID = 0x0699
+MSO44_USB_PID = 0x0527
 
 class MSO4:
 	'''Tektronix MSO 4-Series scope object. This is not usable until :func:`MSO4.con()` is called.'''
@@ -302,20 +306,19 @@ class MSO4:
 	def display(self, value: bool):
 		self.sc.write(f'DISplay:WAVEform {int(value)}')
 
-def usb_reboot(usb_addr: str) -> bool:
-	'''Reboots the scope when it is not reachable through TCP/IP.
+def usb_reboot(vid: int, pid: int) -> bool:
+	'''Reboots the scope via USB when it is not reachable through TCP/IP.
 
 	Args:
 		usb_addr: VISA resource string for USB connection (see :func:`MSO4.con()` for more information)
 	'''
-	rm = visa.ResourceManager()
-	sc = rm.open_resource(usb_addr)
-	sc.write('SCOPEApp REBOOT')
+
+	instr = usbtmc.Instrument(vid, pid) # Using python-usbtmc as pyvisa-py seems to always timeout here
 	try:
-		sc.close()
+		instr.write("SCOPEAPP REBOOT")
+		instr.close()
 	except Exception:
 		# Don't act on it, because it should be rebooting anyway now
-		scope_logger.warning('Failed to close USB VISA scope during reboot')
+		scope_logger.warning('Failed to close USB TMC scope during reboot')
 		return False
-	rm.close()
 	return True
