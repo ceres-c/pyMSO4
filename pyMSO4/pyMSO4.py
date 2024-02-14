@@ -31,9 +31,10 @@ class MSO4:
 		#: pyvisa MessageBasedResource object used to communicate with the scope
 		self.sc: visa.resources.MessageBasedResource = None # type: ignore
 
-		# Local storage for the internal trigger instance
-		self._trig: MSO4Triggers = trig_type
-		self._timeout = timeout # Never read this value, use self.sc.timeout instead, this is only temporary storage until `con()` is called
+		# Temporary storage until `con()` is called
+		self._trig_type: MSO4Triggers = trig_type # Trigger TYPE container
+		self._trig: MSO4Triggers = None # Trigger INSTANCE container # type: ignore
+		self._timeout = timeout # Don't read: use self.sc.timeout instead
 
 		#: MSO4Acquisition instance used to control the acquisition settings
 		self.acq: MSO4Acquisition = None # type: ignore
@@ -159,12 +160,12 @@ class MSO4:
 		self.connect_status = True
 
 		# Init additional scope classes
-		self.trigger = self._trig
 		ch_a_num = int(sc_id['model'][-1]) # Hacky, I know, but even Tektronix people suggest it
 		# Source: https://forum.tek.com/viewtopic.php?f=568&t=135345
-		self.acq = MSO4Acquisition(self.sc, ch_a_num)
 		for ch_a in range(ch_a_num):
 			self.ch_a.append(MSO4AnalogChannel(self.sc, ch_a + 1))
+		self.trigger = self._trig_type
+		self.acq = MSO4Acquisition(self.sc, ch_a_num)
 
 		return True
 
@@ -255,7 +256,9 @@ class MSO4:
 	def trigger(self, trig_type: MSO4Triggers):
 		if not self.connect_status:
 			raise OSError('Scope is not connected. Connect it first...')
-		self._trig = trig_type(self.sc)
+		if self.ch_a_num < 1:
+			raise OSError('No analog channels available. Init them first...')
+		self._trig = trig_type(self.sc, self.ch_a_num)
 
 	@property
 	def timeout(self) -> float:

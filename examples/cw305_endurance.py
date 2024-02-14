@@ -6,7 +6,9 @@ import pyvisa as visa
 
 TIMEOUT = 20000
 TIMEOUT_SHORT = 200 # Used when running the acquisition loop and don't want to waste time on a missed trigger
+TIMEOUT_REBOOT = 3*60*1000 # 3 minutes
 SCOPE_ADDR = "192.168.1.140"
+SCOPE_USB = "USB0::1689::1319::C019654::0::INSTR"
 
 mso44 = pyMSO4.MSO4(trig_type=pyMSO4.MSO4EdgeTrigger, debug=False)
 mso44.con(ip=SCOPE_ADDR)
@@ -77,33 +79,42 @@ mso44.timeout = TIMEOUT_SHORT
 start = time.time()
 try:
 	while True:
-		i += 1
-		if i % 20 == 0:
-			print(f'Traces: {i}, Timeouts: {timeouts}, Duplicates: {duplicates}', end='\r', flush=True)
-
-		target.simpleserial_write('p', b'\x00' * 16)
-		response = target.simpleserial_read('r', target.output_len, ack=True)
 		try:
-			# NOTE calling get_datatype and reading is_big_endian will result in commands being sent
-			# to the scope, which in turn will disable curvestream mode. This is fine because they
-			# are cached after the first call, and the first acquisition always times out anyway (?)
-			trace = mso44.sc.read_binary_values(datatype=mso44.acq.get_datatype(), is_big_endian=mso44.acq.is_big_endian)
+			i += 1
+			if i % 20 == 0:
+				print(f'Traces: {i}, Timeouts: {timeouts}, Duplicates: {duplicates}', end='\r', flush=True)
+
+			target.simpleserial_write('p', b'\x00' * 16)
+			response = target.simpleserial_read('r', target.output_len, ack=True)
+			try:
+				# NOTE calling get_datatype and reading is_big_endian will result in commands being sent
+				# to the scope, which in turn will disable curvestream mode. This is fine because they
+				# are cached after the first call, and the first acquisition always times out anyway (?)
+				trace = mso44.sc.read_binary_values(datatype=mso44.acq.get_datatype(), is_big_endian=mso44.acq.is_big_endian)
+			except visa.errors.VisaIOError as e:
+				if e.error_code == visa.constants.VI_ERROR_TMO:
+					timeouts += 1
+					mso44.clear_buffers()
+					mso44.acq.curvestream = True
+					continue
+				else:
+					raise
+			if trace == last_trace:
+				# This should never happen because the scope send buffer is always cleared on a read, but...
+				duplicates += 1
+			last_trace = trace
 		except visa.errors.VisaIOError as e:
-			if e.error_code == visa.constants.VI_ERROR_TMO:
-				timeouts += 1
-				mso44.clear_buffers()
-				mso44.acq.curvestream = True
-				continue
-			else:
-				raise
-		if trace == last_trace:
-			# This should never happen because the scope send buffer is always cleared on a read, but...
-			duplicates += 1
-		last_trace = trace
+			# The scope might have crashed and is not reachable through TCP anymore, use USB to reboot it
+			print(f'\nGot VISA error: {e}')
+			pyMSO4.usb_reboot(SCOPE_USB)
+			mso44.con(ip=SCOPE_ADDR, open_timeout=TIMEOUT_REBOOT)
+			prep(mso44)
+			mso44.acq.curvestream = True
+			mso44.clear_buffers() # Good measure
 except KeyboardInterrupt:
-	end = time.time()
 	print('\nGot ctrl-c, stopping...')
 
+end = time.time()
 mso44.timeout = TIMEOUT # Reset timeout
 mso44.acq.curvestream = False
 print(f'Captured {i} traces in {end - start} seconds. {timeouts} timeouts, {duplicates} duplicates.')

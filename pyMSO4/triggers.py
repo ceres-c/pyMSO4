@@ -77,11 +77,20 @@ class MSO4TriggerBase(util.DisableNewAttr):
 		return self._cached_source
 	@source.setter
 	def source(self, src: str):
-		matches = re.match(r'ch(\d+)', src, re.IGNORECASE)
-		if matches and int(matches.group(1)) > self._ch_a_count:
-			raise ValueError(f'Invalid trigger source {src}. Valid sources are ch1-ch{self._ch_a_count}')
-		if src.lower() not in MSO4TriggerBase._sources:
+		src = src.lower()
+		valid = False
+		if src.lower()[:2] == 'ch':
+			try:
+				ch_num = int(src[2:])
+				if ch_num < self._ch_a_count:
+					valid = True
+			except ValueError:
+				pass
+		else:
+			valid = src in MSO4TriggerBase._sources
+		if not valid:
 			raise ValueError(f'Invalid trigger source {src}. Valid sources are ch1-ch{self._ch_a_count} and {MSO4TriggerBase._sources}')
+
 		if self._cached_source == src:
 			return
 		self._cached_source = src
