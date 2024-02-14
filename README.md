@@ -1,5 +1,6 @@
 # pyMSO44
-A python library for interfacing with the Tek MSO44 oscilloscope.
+A python library for interfacing with the Tek MSO4 oscilloscopes (tested with
+MSO44).
 
 # Dependencies
 Debian 12: `sudo apt update && sudo apt install python3 python3-pip python3-venv`
@@ -41,6 +42,6 @@ expected, nor as the documentation says. Here are some tips to get it to work.
 
 Use the `mso4.reboot()` method to reset the scope UI and VISA server.
 
-2. **Unable to connect to the device (pyVisa not setting up the connection)**
+2. **Unable to connect to the device (pyvisa not setting up the connection)**
 
 Reboot the scope through the front button.
