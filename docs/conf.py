@@ -16,7 +16,7 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent.absolute()))
 
 print(sys.path)
-print(pathlib.Path(__file__).parent.parent.absolute().glob('*'))
+print([*pathlib.Path(__file__).parent.parent.absolute().glob('*')])
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
