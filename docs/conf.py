@@ -21,7 +21,8 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent.parent.absolute()))
 extensions = [
 	'sphinx.ext.autodoc',
 	'sphinx.ext.viewcode',
-	'sphinx.ext.napoleon'
+	'sphinx.ext.napoleon',
+    "sphinx.ext.intersphinx",
 ]
 
 templates_path = ['_templates']
@@ -30,6 +31,10 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 autodoc_default_options = {
     'special-members': '__init__',
 	'member-order': 'bysource',
+}
+
+intersphinx_mapping = {
+    "pyvisa": ("https://pyvisa.readthedocs.io/en/latest/", None),
 }
 
 # -- Options for HTML output -------------------------------------------------

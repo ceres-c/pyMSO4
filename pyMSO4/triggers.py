@@ -22,7 +22,7 @@ class MSO4TriggerBase(util.DisableNewAttr):
 		Args:
 			res: The VISA resource to use for communication
 			ch_a_count: The number of analog channels available on the scope
-			event: The event channel (``A`` or ``B``) to use as a trigger
+			event: The event channel (``A`` or ``B``) to use as a trigger.
 				See: 4/5/6 Series MSO Help § Trigger on sequential events (A and B triggers)
 				(https://www.tek.com/en/sitewide-content/manuals/4/5/6/4-5-6-series-mso-help)
 		'''

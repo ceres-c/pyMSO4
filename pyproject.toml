@@ -1,6 +1,6 @@
 [project]
 name = "pyMSO4"
-version = "0.1"
+version = "1.0"
 authors = [
   { name="Federico Cerutti", email="federico@ceres-c.it" },
 ]
@@ -14,8 +14,8 @@ classifiers = [
 ]
 dependencies = [
   'pyvisa',
-  'pyvisa_py'
-  'python-usbtmc'
+  'pyvisa_py',
+  'python-usbtmc',
   'pyusb'
 ]
 
