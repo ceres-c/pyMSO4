@@ -253,7 +253,7 @@ class MSO4Acquisition(util.DisableNewAttr):
 
 	@property
 	def wfm_src(self) -> list[str]:
-		'''Source of the retrieved waveform (analog FlexChannel(s) source(s)). Valid values are ``chN`` (Channel n).
+		'''Source of the retrieved waveform (analog FlexChannel(s) source(s)). Valid values are ``chN`` (Analog channel n).
 
 		*Not cached*
 
@@ -424,6 +424,8 @@ class MSO4Acquisition(util.DisableNewAttr):
 	@property
 	def is_big_endian(self) -> bool:
 		'''Return True if the byte order is big endian, False otherwise.
+
+		*Cached*
 		'''
 		return self.wfm_byte_order == 'msb'
 
@@ -471,5 +473,7 @@ class MSO4Acquisition(util.DisableNewAttr):
 
 	def get_datatype(self) -> BINARY_DATATYPES:
 		'''Get the data type of the binary waveform data in struct.pack form. Does not return endianess.
+
+		*Cached*
 		'''
 		return self._wfm_datatypes[self.wfm_byte_nr][self.wfm_binary_format]

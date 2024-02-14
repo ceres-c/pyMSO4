@@ -287,7 +287,8 @@ class MSO4:
 	@property
 	def display(self) -> bool:
 		'''Enable or disable the waveform display on the scope display.
-		Not cached
+
+		*Not cached*
 
 		:Getter: Return the display state (bool)
 

@@ -4,14 +4,15 @@ from . import util
 from . import scope_logger
 
 class MSO4AnalogChannel(util.DisableNewAttr):
-	'''Settings for each analog channel
+	'''Settings for each analog channel'''
 	
-	Attributes:
-		enable (bool): Enable the channel
-		scale (float): Vertical scale of the channel in V
-		offset (float): Vertical offset of the channel in V'''
-
 	def __init__(self, res: pyvisa.resources.MessageBasedResource, channel: int):
+		'''Creates a new channel object
+
+		Args:
+			res: The VISA resource to use for communication
+			channel: The channel number (1-n)
+		'''
 		super().__init__()
 
 		self.sc = res
@@ -26,12 +27,13 @@ class MSO4AnalogChannel(util.DisableNewAttr):
 
 	@property
 	def enable(self) -> bool:
-		'''Enable the channel.
-		Not cached
+		'''Enables the channel.
 
-		:Getter: Return the enable status (bool)
+		*Not cached*
 
-		:Setter: Set the enable status (bool)
+		:Getter: Return the enable status
+
+		:Setter: Set the enable status
 		'''
 		return bool(int(self.sc.query(f'SELect:CH{self.channel}?').strip()))
 	@enable.setter
@@ -42,12 +44,13 @@ class MSO4AnalogChannel(util.DisableNewAttr):
 
 	@property
 	def scale(self) -> float:
-		'''The vertical scale of the waveform.
-		Not cached
+		'''Sets the vertical scale of the waveform.
+
+		*Not cached*
 
 		:Getter: Return the scale in V (float)
 
-		:Setter: Set the scale in V (float)
+		:Setter: Set the scale in V (int or float)
 		'''
 		return float(self.sc.query(f'CH{self.channel}:SCAle?').strip())
 	@scale.setter
@@ -62,12 +65,13 @@ class MSO4AnalogChannel(util.DisableNewAttr):
 
 	@property
 	def position(self) -> float:
-		'''The vertical position of the waveform.
-		Not cached
+		'''Sets the vertical position of the waveform.
+
+		*Not cached*
 
 		:Getter: Return the position in V (float)
 
-		:Setter: Set the position in V (float)
+		:Setter: Set the position in V (int or float)
 		'''
 		return float(self.sc.query(f'CH{self.channel}:POSition?').strip())
 	@position.setter
