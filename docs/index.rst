@@ -18,7 +18,7 @@ Dependencies
 ------------
 - pyvisa
 - pyvisa-py
-- python-usbtmc
+- pyusb
 
 Build dependencies
 ------------------

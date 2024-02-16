@@ -1,5 +1,4 @@
 import pyvisa as visa
-import usbtmc
 
 from . import scope_logger
 from .triggers import MSO4Triggers, MSO4EdgeTrigger
@@ -94,7 +93,7 @@ class MSO4:
 			'firmware': s[3]
 		}
 
-	def con(self, ip: str = '', usb_addr: str = '', **kwargs) -> bool:
+	def con(self, ip: str = '', usb_vid_pid: tuple[int, int] = (), **kwargs) -> bool: # type: ignore
 		'''Connects to scope and resets it. It will also:
 			- timeout = timeout from init
 			- clear event queue, standard event status register, status byte register
@@ -106,7 +105,7 @@ class MSO4:
 
 		Args:
 			ip (str): IP address of scope
-			usb_addr (str): VISA resource string for USB connection
+			usb_vid_pid (tuple[int, int]): USB VID and PID of scope
 			kwargs: Additional arguments to pass to ``pyvisa.ResourceManager.open_resource``
 
 		Returns:
@@ -134,14 +133,16 @@ class MSO4:
 				scope_logger.warning('Failed to disconnect from scope. Trying to connect anyway...')
 
 		self.rm = visa.ResourceManager()
-		if ip and usb_addr:
+		if ip and usb_vid_pid:
 			raise ValueError('Only one of IP address or USB resource string must be specified')
 		elif ip:
-			self.sc = self.rm.open_resource(f'TCPIP0::{ip}::inst0::INSTR', **kwargs) # type: ignore
-		elif usb_addr:
-			self.sc = self.rm.open_resource(usb_addr, **kwargs) # type: ignore
+			addr = f'TCPIP0::{ip}::inst0::INSTR'
+		elif usb_vid_pid:
+			vid, pid = usb_vid_pid
+			addr = f'USB0::{vid:04}::{pid:04}::*::0::INSTR' # '*' to match all serial numbers
 		else:
 			raise ValueError('Either IP address or USB resource string must be specified')
+		self.sc = self.rm.open_resource(addr, **kwargs) # type: ignore
 
 		# Apply debugging decorator
 		for method in self._pyvisa_methods:
@@ -313,12 +314,13 @@ def usb_reboot(vid: int, pid: int) -> bool:
 		usb_addr: VISA resource string for USB connection (see :func:`MSO4.con()` for more information)
 	'''
 
-	instr = usbtmc.Instrument(vid, pid) # Using python-usbtmc as pyvisa-py seems to always timeout here
+	rm = visa.ResourceManager()
+	usb_addr = f'USB0::{vid:04}::{pid:04}::*::0::INSTR' # '*' to match all serial numbers
 	try:
+		instr = rm.open_resource(usb_addr)
 		instr.write("SCOPEAPP REBOOT")
 		instr.close()
-	except Exception:
-		# Don't act on it, because it should be rebooting anyway now
-		scope_logger.warning('Failed to close USB TMC scope during reboot')
+	except ValueError:
+		scope_logger.warning('Failed to talk with scope via USB TMC to reboot it')
 		return False
 	return True

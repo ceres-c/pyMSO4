@@ -7,8 +7,7 @@ import pyvisa as visa
 TIMEOUT = 20000
 TIMEOUT_SHORT = 200 # Used when running the acquisition loop and don't want to waste time on a missed trigger
 TIMEOUT_REBOOT = 5*60 # 5 minutes
-SCOPE_ADDR = "192.168.1.140"
-SCOPE_USB = "USB0::1689::1319::C019654::0::INSTR"
+SCOPE_ADDR = "128.181.240.130" # Using p2p ethernet connection, change with your IP if using a switch
 
 mso44 = pyMSO4.MSO4(trig_type=pyMSO4.MSO4EdgeTrigger, debug=False)
 mso44.con(ip=SCOPE_ADDR)

@@ -68,16 +68,15 @@ To ensure the oscilloscope is reachable, run the following command:
    :linenos:
 
    source venv/bin/activate
+   pip3 install psutil # Necessary to discover TCP connected devices
    pyvisa-shell
-   list
-
-Here you should have at least 2 entries:
-
-.. code-block::
-
+   (visa) list
    ( 0) USB0::1689::1319::C019654::0::INSTR
    ( 1) TCPIP::192.168.1.140::INSTR
 
+There should be at least 2 entries in the output, one for the USB device and
+one for the Ethernet device. Test they are both connectable with ``open 0`` and
+``open 1``, and query each with ``query *IDN?``.
 
 Examples
 --------

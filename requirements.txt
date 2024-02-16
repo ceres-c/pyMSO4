@@ -1,4 +1,3 @@
 pyvisa
 pyvisa_py
-python-usbtmc
 pyusb

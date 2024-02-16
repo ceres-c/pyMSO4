@@ -15,7 +15,6 @@ classifiers = [
 dependencies = [
   'pyvisa',
   'pyvisa_py',
-  'python-usbtmc',
   'pyusb'
 ]
 
