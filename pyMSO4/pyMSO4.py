@@ -94,7 +94,7 @@ class MSO4:
 		}
 
 	def con(self, ip: str = '', usb_vid_pid: tuple[int, int] = (), **kwargs) -> bool: # type: ignore
-		'''Connects to scope and resets it. It will also:
+		'''Connects to scope and:
 			- clear event queue, standard event status register, status byte register
 			- set timeout = timeout from :func:`MSO4.__init__`
 
@@ -147,9 +147,6 @@ class MSO4:
 
 		# Set visa timeout
 		self.timeout = self._timeout
-
-		# Reset scope
-		self.reset()
 
 		sc_id = self._id_scope()
 		if sc_id['vendor'] != 'TEKTRONIX':
@@ -221,6 +218,14 @@ class MSO4:
 			pass
 		self.sc.clear() # Discard the `1` sent by the scope
 		self.sc.write("*CLS")
+
+	def busy(self) -> bool:
+		'''Queries the status of the scope
+
+		Returns: True if the scope is currently busy processing commands that generate
+		an OPC Message, False otherwise.
+		'''
+		return bool(int(self.sc.query("BUSY?")))
 
 	def cls(self) -> None:
 		'''Clears event queue, standard event status register, status byte register.

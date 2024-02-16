@@ -14,7 +14,8 @@ mso44.con(ip=SCOPE_ADDR)
 
 def prep(scope: pyMSO4.MSO4):
 	scope.timeout = TIMEOUT
-	scope.display = False # NOTE: if True, you need to increase TIMEOUT_SHORT above
+	scope.reset() # NOTE without this, it will not be possible to recover the scope when the TCP connection hangs
+	scope.display = False # NOTE: if True, you need to increase TIMEOUT_SHORT
 
 	# Enable channels 1 and 2
 	scope.ch_a_enable([True, True, False, False])
@@ -37,7 +38,6 @@ def prep(scope: pyMSO4.MSO4):
 	# Use default data acquisition settings
 
 	# Set up the scope to output the entire waveform
-	wfm_len = 0
 	for _ in range(3): # Might take some persistence to get the scope to update Nr_Pt
 		scope.acq.wfm_src = ['CH1']
 		scope.acq.wfm_start = 1
@@ -112,12 +112,12 @@ try:
 				try:
 					mso44 = pyMSO4.MSO4(trig_type=pyMSO4.MSO4EdgeTrigger, debug=False)
 					mso44.con(ip=SCOPE_ADDR)
+					prep(mso44)
+					mso44.acq.curvestream = True
+					mso44.clear_buffers() # Good measure
 					break
 				except Exception:
-					pass
-			prep(mso44)
-			mso44.acq.curvestream = True
-			mso44.clear_buffers() # Good measure
+					pass # Try again, scope is not ready
 except KeyboardInterrupt:
 	print('\nGot ctrl-c, stopping...')
 
