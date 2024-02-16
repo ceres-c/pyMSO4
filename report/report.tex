@@ -33,6 +33,16 @@
 	\par\noindent\ignorespacesafterend%
 }
 
+\newenvironment{laptop_setting}{
+	\parskip=5pt\par\nopagebreak\centering\sffamily%
+	\begin{tabular}{>{\columncolor{red!15}}m{2em} >{\columncolor{red!15}}m{.8\textwidth}}
+	\includesvg{img/laptop.svg} & 
+} {
+	\\
+	\end{tabular}
+	\par\noindent\ignorespacesafterend%
+}
+
 % \begin{tabular}{|c|p{13cm}|}\hline 
 % 	Symbol & Description \\\hline
 % 	 & \\ [-0.5em] \icon{icon_settings.pdf} & Text in only one line. \\ [-0.5em] & \\\hline
@@ -111,10 +121,10 @@ The CCI group at the University of Amsterdam has acquired a Tektronix MSO44\foot
 The oscilloscope is equipped with a USB-B 2.0 "device port" (used to control the device from a host computer) and an Ethernet port. There are more USB-A ports, and they can be used for USB HID or storage devices. It supports both \nameref{sec:usbtmc} and \nameref{sec:lxi} communication protocols with \nameref{sec:scpi} commands.
 
 \subsection{Speculations on the firmware}\label{sec:fw-info}
-The software architecture of the oscilloscope seems to be more reminiscent of a monolithic, tightly integrated embedded system rather than a modular system. No SDK is provided for this specific device by the vendor, and the only way to control the oscilloscope is through the graphical UI or \gls{visa}. A quick reverse engineering of the firmware showed that the UI is controlling directly the analog frontend of the device, and similarly the \gls{lxi} server running on the device goes through the UI binary to control the device.
+The software architecture of the oscilloscope seems to be more reminiscent of a monolithic, tightly integrated embedded system rather than a modular RTOS. No SDK is provided for this specific device by the vendor, and the only way to control the oscilloscope is through the graphical UI or \gls{visa}.
 
-This becomes problematic when the \gls{lxi} server crashes and stops responding, causing the UI to also become unresponsive, thus requiring manual interaction to reboot the oscilloscope. Crashes are sufficiently frequent to make this an issue. Crashes will happen in multiple circumstances, but they can mostly be summed up in two categories:
-\begin{itemize}[nosep]
+A quick reverse engineering analysis of the firmware showed that the control of the analog frontend is built into the UI binary, consequently, the \gls{lxi} server also has to go through the UI to execute commands. This becomes problematic when the \gls{lxi} server crashes and stops responding, causing the UI to also become unresponsive, thus requiring manual interaction to reboot the oscilloscope. Crashes will happen in multiple circumstances, but they can mostly be summed up in two categories:
+\begin{itemize}
 	\item \textbf{Buffer overflows}: The oscilloscope has a limited amount of memory, and it is easy to fill it up when acquiring and transferring multiple traces with the \texttt{CURVE?} command. Speed does not directly affect this issue, as even at speeds as low as 1 trace/s the oscilloscope will eventually crash after \(\sim 300\) traces. I speculate this is due to some internal elaboration buffer that is not being freed. This problem was solved with CurveStream and FastAcq modes (more in \autoref{sec:pitfalls}).
 	\item \textbf{Network issues}: The TCP stack running on the oscilloscope will stop responding to requests after a variable number of traces in the \(20000\sim 40000\) range, forcing again a manual reboot. This problem was solved by using the USB interface as a backup control interface.
 \end{itemize}
@@ -123,18 +133,37 @@ This becomes problematic when the \gls{lxi} server crashes and stops responding,
 The pyMSO4 library is a python library that provides an interface to control the Tektronix 4 Series \glspl{mso} and acquire power traces. It is built on top of pyVISA and pyVISA-py and provides a high-level interface to control the oscilloscope. The library is designed to be easy to use and to provide a high-level interface to control the oscilloscope. It should not be necessary to resort to the programmer manual to configure the basic settings of the oscilloscope.
 
 \subsection{Wiring}
-The oscilloscope is connected to the host computer via both Ethernet and USB. Ethernet is used to control the instrument as well as acquiring data, while USB is used as a backup control interface if the Ethernet connection is lost. This is required because, as stated in \autoref{sec:fw-info}, the visa implementation on the \gls{vr} is not reliable and often crashes, requiring a reset of the oscilloscope.
+The oscilloscope should be connected to the host computer via both Ethernet and USB. Ethernet is used to control the instrument as well as acquire data, while USB is used as a backup control interface if the Ethernet connection is lost. This is required because, as stated in \autoref{sec:fw-info}, the visa implementation on the \gls{vr} is not reliable and often crashes, requiring a reset of the oscilloscope.
 \begin{itemize}
-	\item \textbf{Ethernet}: The oscilloscope is connected to a router, to which the host computer is also connected. The router provides a DHCP server to assign an IP address to the oscilloscope. % TODO check if p2p ethernet works
+	\item \textbf{Ethernet and switch}: The oscilloscope is connected to a router, to which the host computer is also connected. The router provides a DHCP server to assign an IP address to the oscilloscope. % TODO check if p2p ethernet works
 	\begin{scope_setting}
 		Utility\ \rightarrow\  I/O\ldots\ \rightarrow\  LAN\newline
-		DHCP: ON\newline % TODO check this
-		LAN Status: OK
+		Network Address: Auto\newline
+		Apply Changes
 	\end{scope_setting}
+	\begin{laptop_setting}
+		Create a standard network connection with DHCP to the router
+	\end{laptop_setting}
+
+	\item \textbf{Ethernet direct}: The oscilloscope is directly connected to the host computer. The host computer is configured with a static IP address in the same subnet as the oscilloscope.\\
+	\textit{Note}: You need either a crossover cable or a modern network card with Auto MDI-X\footnote{\url{https://en.wikipedia.org/wiki/Medium-dependent_interface\#Auto_MDI-X}}.
+	\begin{scope_setting}
+		Utility\ \rightarrow\  I/O\ldots\ \rightarrow\  LAN\newline
+		Network Address: Manual\newline
+		Instrument IP Address: 128.181.240.130 (example)\newline
+		Subnet Mask: 255.255.255.0\newline
+		Apply Changes
+	\end{scope_setting}
+	\begin{laptop_setting}
+		\begin{minted}[breaklines,autogobble]{bash}
+			sudo nmcli con add con-name "tek-mso44-p2p" ifname <INTERFACE NAME> type ethernet ip4 128.181.240.131/24
+		\end{minted}
+	\end{laptop_setting}
+
 	\item \textbf{USB}: Connect the USB-B "device" port on the back of the oscilloscope to the host computer. The oscilloscope will be recognized as a \gls{usbtmc} device.
 	\begin{scope_setting}
 		Utility\ \rightarrow\  I/O\ldots\ \rightarrow\  USB Device Port\newline
-		USB Device Port: ON % TODO check this
+		USB Device Port: ON
 	\end{scope_setting}
 \end{itemize}
 
@@ -156,18 +185,15 @@ Additionally, the USB device needs to be accessible by the user running the scri
 	# Did you logout?
 \end{minted}
 To test the configuration, run the following python script:
-\begin{minted}[frame=lines,breaklines,autogobble]{bash}
+\begin{minted}[frame=lines,breaklines,autogobble,escapeinside=||]{bash}
 	source venv/bin/activate
+	pip3 install psutil # Necessary to discover TCP connected devices
 	pyvisa-shell
-	list
-\end{minted}
-And there should be at least 2 entries in the output, one for the USB device and one for the Ethernet device
-\begin{minted}[frame=lines,autogobble]{text}
+	(visa) list
 	( 0) USB0::1689::1319::C019654::0::INSTR
 	( 1) TCPIP::192.168.1.140::INSTR
 \end{minted}
-
-	
+There should be at least 2 entries in the output, one for the USB device and one for the Ethernet device.
 
 \subsection{Pitfalls}\label{sec:pitfalls}
 \gls{visa} is a complex standard with asynchronous operations, events, and multiple layers of abstraction. The \gls{visa} standard is not always implemented correctly by vendors, and the pyVISA-py library is not a complete implementation of the standard. This means there are multiple gray areas and "should's" in the documentation that are not always true. For example, some commands simply do not work as stated in the programming manual\cite{tektronix:mso_progman}. Here are some of the issues encountered during the development of the library:
@@ -214,6 +240,10 @@ For more details on the available properties and methods, refer to the documenta
 \end{flushleft}
 
 
+
+% 1119856 samples / 120119 s = 9,3 Hz (total ~33h)
+
+
 % \begin{flushleft}
 % 	\captionsetup{type=listing}
 % 	\begin{minted}[autogobble]{c}
@@ -235,6 +265,7 @@ For more details on the available properties and methods, refer to the documenta
 {
 \raggedright%
 \nocite{ico:oscilloscope}
+\nocite{ico:laptop}
 \bibliographystyle{IEEEtran}
 \bibliography{bibliography}
 }
