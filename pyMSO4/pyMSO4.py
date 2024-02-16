@@ -95,13 +95,10 @@ class MSO4:
 
 	def con(self, ip: str = '', usb_vid_pid: tuple[int, int] = (), **kwargs) -> bool: # type: ignore
 		'''Connects to scope and resets it. It will also:
-			- timeout = timeout from init
 			- clear event queue, standard event status register, status byte register
+			- set timeout = timeout from :func:`MSO4.__init__`
 
-		To obtain the USB VISA resource string, you can use the list command in ``pyvisa-shell``
-		(binary provided by pyvisa), see
-		https://pyvisa.readthedocs.io/en/latest/introduction/names.html#visa-resource-syntax-and-examples
-		for more information.
+		Either ``ip`` or ``usb_vid_pid`` must be specified (not both).
 
 		Args:
 			ip (str): IP address of scope
@@ -112,7 +109,7 @@ class MSO4:
 			True if successful, False otherwise
 
 		Raises:
-			ValueError: IP address must be specified
+			ValueError: Both or neither IP address and USB VID/PID were specified
 			OSError: Invalid vendor or model returned from scope
 		'''
 
@@ -309,9 +306,14 @@ class MSO4:
 
 def usb_reboot(vid: int, pid: int) -> bool:
 	'''Reboots the scope via USB when it is not reachable through TCP/IP.
+	Does not require a pre-existing connection to the scope.
 
 	Args:
-		usb_addr: VISA resource string for USB connection (see :func:`MSO4.con()` for more information)
+		vid: USB Vendor ID
+		pid: USB Product ID
+
+	Returns:
+		True if the reboot command was sent successfully, False otherwise
 	'''
 
 	rm = visa.ResourceManager()
