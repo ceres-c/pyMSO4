@@ -68,7 +68,7 @@ To ensure the oscilloscope is reachable, run the following command:
    :linenos:
 
    source venv/bin/activate
-   pip3 install psutil # Necessary to discover TCP connected devices
+   pip3 install psutil # Necessary to discover TCP devices
    pyvisa-shell
    (visa) list
    ( 0) USB0::1689::1319::C019654::0::INSTR

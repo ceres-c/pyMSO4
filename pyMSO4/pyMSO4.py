@@ -61,7 +61,7 @@ class MSO4:
 		if self.acq:
 			self.acq.clear_caches()
 		for ch in self.ch_a:
-			if ch:
+			if ch is not None:
 				ch.clear_caches()
 
 	def _id_scope(self) -> dict[str, str]:
@@ -95,8 +95,8 @@ class MSO4:
 
 	def con(self, ip: str = '', usb_vid_pid: tuple[int, int] = (), **kwargs) -> bool: # type: ignore
 		'''Connects to scope and:
-			- clear event queue, standard event status register, status byte register
-			- set timeout = timeout from :func:`MSO4.__init__`
+			- clears event queue, standard event status register, status byte register
+			- sets timeout = timeout from :func:`MSO4.__init__`
 
 		Either ``ip`` or ``usb_vid_pid`` must be specified (not both).
 
