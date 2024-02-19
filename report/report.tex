@@ -161,7 +161,7 @@ The oscilloscope should be connected to the host computer via both Ethernet and 
 		Create a standard network connection with DHCP to the router
 	\end{laptopsetting}
 
-	\item \textbf{Ethernet direct}: The oscilloscope is directly connected to the host computer. The host computer is configured with a static IP address in the same subnet as the oscilloscope. See Tektronix FAQs for more information\footnote{\url{https://www.tek.com/en/support/faqs/im-not-lan-id-establish-peer-peer-connection-my-pc-scopes-ethernet-port-possible}}\\
+	\item \textbf{Ethernet p2p}: The oscilloscope is directly connected to the host computer. The host computer is configured with a static IP address in the same subnet as the oscilloscope. See Tektronix FAQs for more information\footnote{\url{https://www.tek.com/en/support/faqs/im-not-lan-id-establish-peer-peer-connection-my-pc-scopes-ethernet-port-possible}}\\
 	\textit{Note}: You need either a crossover cable or a modern network card with Auto MDI-X\footnote{\url{https://en.wikipedia.org/wiki/Medium-dependent\_interface\#Auto\_MDI-X}}.
 	\begin{scopesetting}
 		Utility\ \rightarrow\  I/O\ldots\ \rightarrow\  LAN\newline
@@ -267,7 +267,7 @@ The library comes with a few examples to demonstrate its usage in the \texttt{ex
 	\item \texttt{ex2\_cw305\_endurance.py} demonstrates how to run a long acquisition campaign and handle disconnections and crashes with the CW305 target board\cite{cw305:spec}.
 \end{itemize}
 
-Further information on how the hardware setup to run these examples can be found in the examples source files as well as in the documentation at \autoref{app:software}.
+Further information on the hardware setup to run these examples can be found in the examples source files as well as in the documentation at \autoref{app:software}.
 
 \begin{figure}[htbp]
 	\centering
@@ -351,16 +351,38 @@ The setup was tested with the following components:
 \begin{itemize}
 	\item \(1 \ \times\) MSO44 oscilloscope (Firmware version \textit{non-windows V2.0.3.950})
 	\item \(1 \ \times\) Debian 12 computer with 1 USB-A port and 1 Ethernet port
-	\item \(1 \ \times\) Xiaomi Mi Router 4A with OpenWRT (any switching device will do)
-	\item \(2 \ \times\) Ethernet cables
+	\item \(1 \ \times\) Xiaomi Mi Router 4A with OpenWRT (not necessary if using ethernet p2p)
+	\item \(2 \ \times\) Ethernet cables (1 if using ethernet p2p)
 	\item \(1 \ \times\) USB-A to USB-B cable
 \end{itemize}
-Additionally, to communicate with the CW305 target board, the following components are required:
+Additionally, to communicate with the CW305\cite{cw305:spec} target board, the following components are required:
 \begin{itemize}
 	\item \(1 \ \times\) SMA-SMA cable
 	\item \(1 \ \times\) SMA-BNC adapter
 	\item \(1 \ \times\) BNC probe
 \end{itemize}
 \section{If your \texttt{uid} is not 0, you don't own it}
+Being frustrated by the aforementioned memory issues with the \texttt{CURVE?} command, I started analyzing a firmware update package with a friend of mine\footnote{\url{https://github.com/CarloMara}}. We quickly assessed it was a linux squashfs filesystem, and we were able to extract the content of the archive to check for any low hanging fruits. We found that network configuration settings configured through the Web UI were passed as parameters to a shell file from the CGI backend. These parameters were not sanitized (\autoref{fig:exploit-sh}), and we were able to obtain arbitrary code execution as root injecting commands through an HTTP proxy (\autoref{fig:exploit-burpsuite}).
 
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{img/exploit\_sh.png}
+	\caption{Exploit entry point in \texttt{scopeapp\_install/scopeapp\_tar/LXI\_RefDesign/Scripts/LinuxIfConfig.sh}}\label{fig:exploit-sh}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{img/exploit\_burpsuite.png}
+	\caption{Injecting commands from the proxy}\label{fig:exploit-burpsuite}
+\end{figure}
+
+Code execution was not sufficient to obtain a shell on its own because the most common linux utilities available in the firmware did not allow for easy shell access. Nevertheless, we noticed the presence of a python 2.7 interpreter, and that we could run a script from USB storage. We then wrote a simple script that would start a socket server and echo the output of any command sent to it.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{img/exploit\_id.jpg}
+	\caption{got root}\label{fig:exploit-id}
+\end{figure}
+
+Additionally, we noticed that external storage is mounted with read/write/execute permissions, thus it would be trivial to compile a statically linked sshd binary and run it from the oscilloscope. We did not pursue this any further as I managed to work around the memory issues with CurveStream mode, but it would be interesting to continue this analysis and, potentially, build a small SDK to run acquisition campaigns directly on the oscilloscope.
 \end{document}
