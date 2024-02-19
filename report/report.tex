@@ -12,6 +12,7 @@
 \MakeOuterQuote{"} % Use quote mark as container for smart quotation system
 \usepackage[stretch=10]{microtype} % Better impagination due to micro font shrinking and stretching
 \usepackage[justification=centering]{caption}
+\usepackage{wrapfig}
 \usepackage{tikz}
 % \usetikzlibrary{arrows,shapes,calc,babel,positioning,fit}
 \usepackage{svg}
@@ -117,6 +118,18 @@ The majority of measurement instruments come equipped with various communication
 
 \subsection{Transport}
 \subsubsection{\texorpdfstring{\gls{usbtmc}}{USB-TMC}}\label{sec:usbtmc}
+\begin{wrapfigure}[10]{r}{0.3\textwidth}
+	\centering
+	\begin{tikzpicture}
+		\draw[rounded corners] (0,2.2) rectangle (5,3.2) node[pos=.5] {SCPI};
+		\draw[rounded corners] (0,1.1) rectangle (5,2.1) node[pos=.5] {VISA};
+		\draw (2.45,0) -- (2.45, 1) {[rounded corners] -- (0, 1) -- (0,0)} -- cycle;
+		\node at (1.23, 0.5) {LXI};
+		\draw (2.55,0) -- (2.55, 1) {[rounded corners] -- (5, 1) -- (5,0)} -- cycle;
+		\node at (3.78, 0.5) {USB-TMC};
+	\end{tikzpicture}
+	\caption{Stack of communication protocols}
+\end{wrapfigure}
 The USB Implementers Forum has defined a standard for USB communication with test equipment. The standard is called \gls{usbtmc} and is supported by most test equipment manufacturers. It defines device descriptors, USB endpoints used for control and data transfer, and encoding of commands and data.
 
 \subsubsection{\texorpdfstring{\gls{lxi}}{LXI}}\label{sec:lxi}
