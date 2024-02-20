@@ -15,9 +15,11 @@ documentation will be in the `docs/_build` directory.
 
 Package
 -------
-Python wheels can be built using the following commands:
+Python wheels can be built using the following commands, and the wheel will be
+in the `dist` directory.
 
 .. code-block:: bash
 
 	source venv/bin/activate
-	pip3 wheel .
+	pip3 install hatch
+	hatch build
