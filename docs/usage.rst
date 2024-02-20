@@ -15,7 +15,7 @@ On a fresh debian 12 install, you can install the dependencies with:
 
 .. code-block:: bash
 
-   sudo apt update && sudo apt install python3 python3-pip python3-venv
+   sudo apt update && sudo apt install python3 python3-pip python3-venv libusb-1.0-0
 
 Udev rules
 ^^^^^^^^^^

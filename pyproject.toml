@@ -2,11 +2,11 @@
 name = "pyMSO4"
 version = "1.0"
 authors = [
-  { name="Federico Cerutti", email="federico@ceres-c.it" },
+  { name="Federico (ceres-c) Cerutti", email="federico@ceres-c.it" },
 ]
 description = "Tektronix MSO4 VISA library"
 readme = "README.md"
-requires-python = ">=3"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/ceres-c/pyMSO4"
+"Homepage" = "https://ceres-c.it/pyMSO4/"
 "Bug Tracker" = "https://github.com/ceres-c/pyMSO4/issues"
 
 [build-system]

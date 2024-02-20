@@ -199,7 +199,7 @@ The oscilloscope should be connected to the host computer via both Ethernet and 
 \subsection{Software}
 The library is available on PyPI and does not depend on any proprietary software. On Debian 12, the following commands will install the required software:
 \begin{minted}[frame=lines,breaklines,autogobble]{bash}
-	sudo apt update && sudo apt install python3 python3-pip python3-venv
+	sudo apt update && sudo apt install python3 python3-pip python3-venv libusb-1.0-0
 	python3 -m venv venv
 	source venv/bin/activate
 	pip3 install pymso4
