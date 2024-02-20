@@ -82,7 +82,7 @@ Examples
 --------
 Square calibration wave
 ^^^^^^^^^^^^^^^^^^^^^^^
-.. image:: _static/ex0_setup.jpg
+.. image:: _static/square_wave_setup.jpg
   :width: 600
   :alt: Square wave setup
 
