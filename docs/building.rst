@@ -21,5 +21,6 @@ in the `dist` directory.
 .. code-block:: bash
 
 	source venv/bin/activate
-	pip3 install hatch
-	hatch build
+	python3 -m pip install --upgrade build twine
+	python3 -m build
+	python3 -m twine upload --repository testpypi dist/*
