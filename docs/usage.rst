@@ -114,7 +114,7 @@ a remote machine)
 .. _target_cw305_endurance:
 
 `ex2_cw305_endurance.py <https://github.com/ceres-c/pyMSO4/blob/master/examples/ex2_cw305_endurance.py>`_
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 This script will acquire an indefinite amount of power traces from the board.
 It shows how to handle the unavoidable disconnects from the oscilloscope, and
 how to reset it.

@@ -132,7 +132,7 @@ class MSO4TriggerBase(util.DisableNewAttr):
 		:Setter: Set the trigger level (int or float)
 
 		Raises:
-			ValueError: if value is not a float
+			ValueError: if value is not an int or float
 		'''
 		if not self._cached_level:
 			resp = self.sc.query(f'TRIGGER:{self._event}:LEVEL:{self.source}?').strip()
@@ -233,23 +233,163 @@ class MSO4WidthTrigger(MSO4TriggerBase):
 	_type = 'WIDth'
 
 	_whens = ['lessthan', 'morethan', 'equal', 'unequal', 'within', 'outside']
+	_polarities = ['positive', 'negative']
+	_logicqualifications = ['on', 'off']
 
 	def __init__(self, res: pyvisa.resources.MessageBasedResource, ch_a_count: int, event: str = 'A'):
 		super().__init__(res, ch_a_count, event)
 
 		self._cached_when = None
-		self._cached_limit = None
+		self._cached_lowlimit = None
+		self._cached_highlimit = None
+		self._cached_polarity = None
+		self._cached_logicqualification = None
 		self.disable_newattr()
 
 	def clear_caches(self):
 		super().clear_caches()
 		self._cached_when = None
-		self._cached_limit = None
+		self._cached_lowlimit = None
+		self._cached_highlimit = None
+		self._cached_polarity = None
+		self._cached_logicqualification = None
 
-	# TODO lowlimit, highlimit, when & polarity properties
-	# - lowlimit (float): The low limit of the pulse width.
-	# - highlimit (float): The high limit of the pulse width.
-	# - when (str): When to trigger (lessthan/morethan/equal/unequal/within/outside)
-	# - polarity (str): The polarity of the pulse (positive/negative)
+	@property
+	def lowlimit(self) -> float:
+		'''The low limit of the pulse width (in seconds)
+
+		*Cached*
+
+		:Getter: Return the current low limit
+
+		:Setter: Set the low limit (int or float)
+
+		Raises:
+			ValueError: if value is not an int or float
+		'''
+		if self._cached_lowlimit is None:
+			resp = self.sc.query(f'TRIGGER:{self._event}:PULSEWidth:LOWLimit?').strip()
+			try:
+				self._cached_lowlimit = float(resp)
+			except ValueError as exc:
+				raise ValueError(f'Got invalid trigger low limit from oscilloscope `{resp}`. Must be a float.') from exc
+		return self._cached_lowlimit
+	@lowlimit.setter
+	def lowlimit(self, low: float):
+		if not isinstance(low, float) and not isinstance(low, int):
+			raise ValueError(f'Invalid trigger low limit {low}. Must be a float or an int.')
+		if self._cached_lowlimit == low:
+			return
+		self._cached_lowlimit = low
+		self.sc.write(f'TRIGGER:{self._event}:PULSEWidth:LOWLimit {low:.4e}')
+
+	@property
+	def highlimit(self) -> float:
+		'''The high limit of the pulse width (in seconds)
+
+		*Cached*
+
+		:Getter: Return the current high limit
+
+		:Setter: Set the high limit (int or float)
+
+		Raises:
+			ValueError: if value is not an int or float
+		'''
+		if self._cached_highlimit is None:
+			resp = self.sc.query(f'TRIGGER:{self._event}:PULSEWidth:HIGHLimit?').strip()
+			try:
+				self._cached_highlimit = float(resp)
+			except ValueError as exc:
+				raise ValueError(f'Got invalid trigger high limit from oscilloscope `{resp}`. Must be a float.') from exc
+		return self._cached_highlimit
+	@highlimit.setter
+	def highlimit(self, high: float):
+		if not isinstance(high, float) and not isinstance(high, int):
+			raise ValueError(f'Invalid trigger high limit {high}. Must be a float or an int.')
+		if self._cached_highlimit == high:
+			return
+		self._cached_highlimit = high
+		self.sc.write(f'TRIGGER:{self._event}:PULSEWidth:HIGHLimit {high:.4e}')
+
+	@property
+	def when(self) -> str:
+		'''Trigger when a pulse is detected with a width ``lessthan``, ``morethan``,
+		``equal``, ``unequal`` the width specified with :attr:`~MSO4WidthTrigger.lowlimit`.
+		When both :attr:`~MSO4WidthTrigger.lowlimit` and :attr:`~MSO4WidthTrigger.highlimit`
+		are set, the trigger can occur when a pulse is either ``within`` or ``outside``
+		the specified width range.
+
+		*Cached*
+
+		:Getter: Return the current when
+
+		:Setter: Set the when (str)
+
+		Raises:
+			ValueError: if value is not one of the allowed strings
+		'''
+		if self._cached_when is None:
+			self._cached_when = self.sc.query(f'TRIGGER:{self._event}:PULSEWidth:WHEn?').strip()
+		return self._cached_when
+	@when.setter
+	def when(self, when: str):
+		if when.lower() not in MSO4WidthTrigger._whens:
+			raise ValueError(f'Invalid trigger when {when}. Valid when: {MSO4WidthTrigger._whens}')
+		if self._cached_when == when:
+			return
+		self._cached_when = when
+		self.sc.write(f'TRIGGER:{self._event}:PULSEWidth:WHEn {when}')
+
+	@property
+	def polarity(self) -> str:
+		'''The polarity of the pulse (``positive``/``negative``)
+
+		*Cached*
+
+		:Getter: Return the current polarity
+
+		:Setter: Set the polarity (str)
+
+		Raises:
+			ValueError: if value is not one of the allowed strings
+		'''
+		if self._cached_polarity is None:
+			self._cached_polarity = self.sc.query(f'TRIGGER:{self._event}:PULSEWidth:POLarity?').strip()
+		return self._cached_polarity
+	@polarity.setter
+	def polarity(self, polarity: str):
+		if polarity.lower() not in MSO4WidthTrigger._polarities:
+			raise ValueError(f'Invalid trigger polarity {polarity}. Valid polarity: {MSO4WidthTrigger._polarities}')
+		if self._cached_polarity == polarity:
+			return
+		self._cached_polarity = polarity
+		self.sc.write(f'TRIGGER:{self._event}:PULSEWidth:POLarity {polarity}')
+
+	@property
+	def logicqualification(self) -> str:
+		'''The logic qualification (``on``/``off``). See the oscilloscope help (p. 122) for more information.
+
+		*Cached*
+
+		:Getter: Return the current logic qualification
+
+		:Setter: Set the logic qualification (str)
+
+		Raises:
+			ValueError: if value is not one of the allowed strings
+		'''
+		if self._cached_logicqualification is None:
+			self._cached_logicqualification = self.sc.query(f'TRIGGER:{self._event}:PULSEWidth:LOGICQUALification?').strip()
+		return self._cached_logicqualification
+	@logicqualification.setter
+	def logicqualification(self, logic: str):
+		if logic.lower() not in MSO4WidthTrigger._logicqualifications:
+			raise ValueError(f'Invalid trigger logic qualification {logic}. Valid logic qualification: {MSO4WidthTrigger._logicqualifications}')
+		if self._cached_logicqualification == logic:
+			return
+		self._cached_logicqualification = logic
+		self.sc.write(f'TRIGGER:{self._event}:PULSEWidth:LOGICQUALification {logic}')
+		scope_logger.warning('Logic qualification input define setting are not yet implemented.')
 
 MSO4Triggers = Type[MSO4EdgeTrigger] | Type[MSO4WidthTrigger]
