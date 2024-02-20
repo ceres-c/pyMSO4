@@ -84,6 +84,9 @@ try:
 			if i % 20 == 0:
 				print(f'Traces: {i}, Timeouts: {timeouts}, Duplicates: {duplicates}', end='\r', flush=True)
 
+
+			# Here we send plaintext to the target for it to be encrypted, and wait for the output
+			# to be ready. This guarantees we will have a trace ready to be read
 			target.simpleserial_write('p', b'\x00' * 16)
 			response = target.simpleserial_read('r', target.output_len, ack=True)
 			try:
