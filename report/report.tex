@@ -311,6 +311,7 @@ After connecting the probe on channel 1 to the calibration square wave output, a
 		mso44.acq.wfm_start = 0
 		mso44.acq.wfm_stop = mso44.acq.horiz_record_length # Get all data points
 		wfm = mso44.sc.query_binary_values('CURVE?', datatype=mso44.acq.get_datatype(), is_big_endian=mso44.acq.is_big_endian)
+		mso44.dis()
 	\end{minted}
 	\caption{pyMSO4 minimal example}
 \end{flushleft}

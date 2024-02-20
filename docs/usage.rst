@@ -80,6 +80,25 @@ one for the Ethernet device. Test they are both connectable with ``open 0`` and
 
 Examples
 --------
+Minimal usage example
+^^^^^^^^^^^^^^^^^^^^^
+Connect the probe on channel 1 to the calibration square wave output, and press
+the Autoset button, the following code will capture a trace of the signal as
+seen on the oscilloscope screen:
+
+.. code-block:: python
+   :linenos:
+
+   import pyMSO4
+   mso44 = pyMSO4.MSO4(trig_type=pyMSO4.MSO4EdgeTrigger)
+   mso44.con(ip="128.181.240.130") # Using p2p ethernet connection
+   mso44.ch_a_enable([True, False, False, False]) # Enable channel 1
+   mso44.acq.wfm_src = ['ch1'] # Set waveform source to channel 1
+   mso44.acq.wfm_start = 0
+   mso44.acq.wfm_stop = mso44.acq.horiz_record_length # Get all data points
+   wfm = mso44.sc.query_binary_values('CURVE?', datatype=mso44.acq.get_datatype(), is_big_endian=mso44.acq.is_big_endian)
+   mso44.dis()
+
 Square calibration wave
 ^^^^^^^^^^^^^^^^^^^^^^^
 .. image:: _static/square_wave_setup.jpg
