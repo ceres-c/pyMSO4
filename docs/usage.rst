@@ -80,6 +80,24 @@ one for the Ethernet device. Test they are both connectable with ``open 0`` and
 
 Examples
 --------
+Square calibration wave
+^^^^^^^^^^^^^^^^^^^^^^^
+.. image:: _static/ex0_setup.jpg
+  :width: 600
+  :alt: Square wave setup
+
+The example in `ex0_square_capture.ipynb
+<https://github.com/ceres-c/pyMSO4/blob/master/examples/ex0_square_capture.ipynb>`_
+shows how to acquire a square wave from the oscilloscope and plot it.
+
+.. code-block:: bash
+   :linenos:
+
+   source venv/bin/activate
+   cd examples
+   pip3 install -r cw305_requirements.txt
+   jupyter lab ex0_square_capture.ipynb
+
 CW305
 ^^^^^
 The following examples will acquire power traces from a
@@ -93,7 +111,7 @@ any metal part of the CW305).
 
 .. image:: _static/cw305_connection.jpg
   :width: 600
-  :alt: CW305 connection
+  :alt: CW305 setup
 
 `cw305_capture_ch1_trigger_ch2.ipynb <https://github.com/ceres-c/pyMSO4/blob/master/examples/cw305_capture_ch1_trigger_ch2.ipynb>`_
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -106,7 +124,7 @@ plot them.
    source venv/bin/activate
    cd examples
    pip3 install -r cw305_requirements.txt
-   jupyter lab --ip 0.0.0.0 cw305_capture_ch1_trigger_ch2.ipynb # Allow connections from any machine in the net
+   jupyter lab cw305_capture_ch1_trigger_ch2.ipynb
 
 Then open the link in the terminal (adjusting the IP if you're connecting from
 a remote machine)
@@ -129,29 +147,6 @@ how to reset it.
 Troubleshoting
 --------------
 The MSO44 is an interesting beast, and sometimes it will not behave as
-expected, nor as the documentation says. Here are some tips to get it to work.
-
-1. **Timeouts in VISA communication but no disconnects**
-
-Use the :meth:`~pyMSO4.pyMSO4.MSO4.reboot` method to reset the scope UI and
-VISA server.
-
-2. | **Unable to connect to the device via TCP** or
-   | **"Exception: error creating link: 3"**
-
-Reboot the scope, either through the front button or USB connection, see
-
-3. **Hang on a sequence of** ``CURVE?`` **acquisitions**
-
-After ~300 acquisitions, the scope will hang, probably due to some internal
-buffer not being cleared. The UI will also hang, and the only way to recover
-is to power flush the scope. Sometimes it remains reachable through TCP, and
-it is possible to reset it with the :meth:`~pyMSO4.pyMSO4.MSO4.reboot` method.
-Nonetheless, a soft reboot will result in another hang after even fewer
-acquisitions.
-
-The actual solution is to use ``CURVESTREAM?`` instead of ``CURVE?``. This
-command will setup the oscilloscope to directly stream the data to the
-computer with minimal post-processing, and effectively avoid the lockup. See
-the :ref:`ex2_cw305_endurance.py <target_cw305_endurance>` example above.
-
+expected, nor as the documentation says. In the `report §5.2
+<https://github.com/ceres-c/pyMSO4/blob/master/report/report.pdf>`_ I have
+documented some of the issues I have encountered and how I have solved them.
