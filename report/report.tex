@@ -286,13 +286,13 @@ Further information on the hardware setup to run these examples can be found in 
 	\centering
 	\begin{minipage}{.5\textwidth}
 	  \centering
-	  \includegraphics[trim=50 0 50 0,clip,width=.9\linewidth]{../examples/img/ex0_setup.jpg}
+	  \includegraphics[trim=50 0 50 0,clip,width=.9\linewidth]{../docs/_static/ex0_setup.jpg}
 	  \captionof{figure}{Square wave setup}
 	  \label{fig:square-wave-setup}
 	\end{minipage}%
 	\begin{minipage}{.5\textwidth}
 	  \centering
-	  \includegraphics[trim=0 700 0 0,clip,width=.9\linewidth]{../docs/_static/cw305_connection.jpg}
+	  \includegraphics[trim=0 700 0 0,clip,width=.9\linewidth]{../docs/_static/cw305_setup.jpg}
 	  \captionof{figure}{CW305 setup}
 	  \label{fig:cw305-setup}
 	\end{minipage}
@@ -334,7 +334,7 @@ With the code in \texttt{ex2\_cw305\_endurance.py}, the oscilloscope was able to
 	\textit{Solution:} Enable FastAcq mode.
 	\item \textbf{FastAcq}\label{item:fastacq}: The length of the waveform retrieved from the oscilloscope can be freely configured, but its actual value will not be updated on the oscilloscope's end until a normal acquisition is performed. This is (probably) due to the optimizations done in FastAcq mode that skip many of the post-procesing steps that would normally happen in a normal acquisition.\\
 	\textit{Solution:} Force a trigger after setting the length of the waveform and check if the data length has been updated.
-	\item \textbf{Oscilloscope not responding via TCP}: The oscilloscope might kill the TCP session after a variable number of traces even when all above issues are addressed. It will also reject any further attempt to initiate a new connection.\\
+	\item \textbf{Oscilloscope not responding via TCP}: The oscilloscope might constantly timeout or kill the TCP session after a variable number of traces even when all above issues are addressed. It will also reject any further attempt to initiate a new connection.\\
 	\textit{Solution:} Use the USB interface to reboot the device with \texttt{pyMSO4.pyMSO4.usb\_reboot}.
 \end{enumerate}
 

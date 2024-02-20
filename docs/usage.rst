@@ -109,7 +109,7 @@ MSO4's channel 1 with an SMA-BNC cable. The trigger signal (``TP1``, bottom
 right) is connected to the MSO4's channel 2 with a standard probe (ground to
 any metal part of the CW305).
 
-.. image:: _static/cw305_connection.jpg
+.. image:: _static/cw305_setup.jpg
   :width: 600
   :alt: CW305 setup
 
