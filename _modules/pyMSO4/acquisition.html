@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyMSO4.acquisition &mdash; pyMSO4 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            pyMSO4
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../building.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">pyMSO4</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyMSO4.acquisition</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyMSO4.acquisition</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
+<span class="kn">import</span> <span class="nn">pyvisa</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">scope_logger</span>
+
+<span class="c1"># Taken from pyvisa.util</span>
+<span class="n">BINARY_DATATYPES</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span>
+    <span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;H&quot;</span><span class="p">,</span> <span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;l&quot;</span><span class="p">,</span> <span class="s2">&quot;L&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">,</span> <span class="s2">&quot;Q&quot;</span><span class="p">,</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span>
+<span class="p">]</span>
+
+<div class="viewcode-block" id="MSO4Acquisition">
+<a class="viewcode-back" href="../../pyMSO4.html#pyMSO4.acquisition.MSO4Acquisition">[docs]</a>
+<span class="k">class</span> <span class="nc">MSO4Acquisition</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">DisableNewAttr</span><span class="p">):</span>
+<span class="w">	</span><span class="sd">&#39;&#39;&#39;Handle all the properties related to waveform acquisition.&#39;&#39;&#39;</span>
+
+	<span class="c1"># See programmer manual for explanation of these</span>
+	<span class="n">_modes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;peakdetect&#39;</span><span class="p">,</span> <span class="s1">&#39;hires&#39;</span><span class="p">,</span> <span class="s1">&#39;average&#39;</span><span class="p">,</span> <span class="s1">&#39;envelope&#39;</span><span class="p">]</span>
+	<span class="n">_stop_afters</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sequence&#39;</span><span class="p">,</span> <span class="s1">&#39;runstop&#39;</span><span class="p">]</span>
+	<span class="n">_horiz_modes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="s1">&#39;manual&#39;</span><span class="p">]</span>
+	<span class="n">_wfm_encodings</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;binary&#39;</span><span class="p">,</span> <span class="s1">&#39;ascii&#39;</span><span class="p">]</span>
+	<span class="n">_wfm_binary_formats</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ri&#39;</span><span class="p">,</span> <span class="s1">&#39;rp&#39;</span><span class="p">,</span> <span class="s1">&#39;fp&#39;</span><span class="p">]</span>
+	<span class="n">_wfm_byte_nrs</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">]</span> <span class="c1"># Programmer manual § WFMOutpre:BYT_Nr</span>
+	<span class="n">_wfm_byte_orders</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lsb&#39;</span><span class="p">,</span> <span class="s1">&#39;msb&#39;</span><span class="p">]</span>
+	<span class="n">_wfm_datatypes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">BINARY_DATATYPES</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span> <span class="c1"># Got these from the programmer manual § WFMOutpre:BN_Fmt</span>
+		<span class="mi">1</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;ri&#39;</span><span class="p">:</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;rp&#39;</span><span class="p">:</span> <span class="s1">&#39;B&#39;</span><span class="p">},</span>
+		<span class="mi">2</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;ri&#39;</span><span class="p">:</span> <span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="s1">&#39;rp&#39;</span><span class="p">:</span> <span class="s1">&#39;H&#39;</span><span class="p">},</span>
+		<span class="mi">4</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;ri&#39;</span><span class="p">:</span> <span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;rp&#39;</span><span class="p">:</span> <span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="s1">&#39;fp&#39;</span><span class="p">:</span> <span class="s1">&#39;f&#39;</span><span class="p">},</span>
+		<span class="mi">8</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;ri&#39;</span><span class="p">:</span> <span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="s1">&#39;rp&#39;</span><span class="p">:</span> <span class="s1">&#39;Q&#39;</span><span class="p">,</span> <span class="s1">&#39;fp&#39;</span><span class="p">:</span> <span class="s1">&#39;d&#39;</span><span class="p">},</span>
+	<span class="p">}</span>
+
+<div class="viewcode-block" id="MSO4Acquisition.__init__">
+<a class="viewcode-back" href="../../pyMSO4.html#pyMSO4.acquisition.MSO4Acquisition.__init__">[docs]</a>
+	<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">res</span><span class="p">:</span> <span class="n">pyvisa</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">MessageBasedResource</span><span class="p">,</span> <span class="n">ch_a_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;Create a new acquisition object.</span>
+
+<span class="sd">		Args:</span>
+<span class="sd">			res: The VISA resource object</span>
+<span class="sd">			ch_a_count: The number of analog channels available on the scope (1-based, so 4 if the scope has 4 channels)</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+
+		<span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="p">:</span> <span class="n">pyvisa</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">MessageBasedResource</span> <span class="o">=</span> <span class="n">res</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_ch_a_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">ch_a_count</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_encoding</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_format</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_byte_nr</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_order</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_curvestream</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_fast_acq</span> <span class="o">=</span> <span class="kc">None</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">disable_newattr</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MSO4Acquisition.clear_caches">
+<a class="viewcode-back" href="../../pyMSO4.html#pyMSO4.acquisition.MSO4Acquisition.clear_caches">[docs]</a>
+	<span class="k">def</span> <span class="nf">clear_caches</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;Resets the local configuration cache so that values will be fetched from</span>
+<span class="sd">		the scope.</span>
+
+<span class="sd">		This is useful when the scope configuration is (potentially) changed externally.</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_encoding</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_format</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_byte_nr</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_order</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_curvestream</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_fast_acq</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="MSO4Acquisition.configured">
+<a class="viewcode-back" href="../../pyMSO4.html#pyMSO4.acquisition.MSO4Acquisition.configured">[docs]</a>
+	<span class="k">def</span> <span class="nf">configured</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;Check if the scope have been configured for acquisition.</span>
+
+<span class="sd">		Returns: True if configured, raises otherwise</span>
+
+<span class="sd">		Raises: ValueError if any of the required variables are not set</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">curvestream</span><span class="p">:</span>
+			<span class="c1"># Can&#39;t send any command while in curvestream mode, or it will be interrupted</span>
+			<span class="k">return</span> <span class="kc">True</span>
+		<span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wfm_src</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wfm_encoding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wfm_binary_format</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wfm_byte_nr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wfm_byte_order</span><span class="p">]):</span>
+			<span class="k">return</span> <span class="kc">True</span>
+		<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Variables [acq.mode, acq.src, acq.wfm_encoding, acq.wfm_binary_format, acq.wfm_byte_nr, acq.wfm_byte_order] must be set before acquisition&#39;</span><span class="p">)</span></div>
+
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The acquisition mode of the scope. Valid modes are:</span>
+<span class="sd">			* ``sample``: SAMple specifies that the displayed data point value is the</span>
+<span class="sd">			  sampled value that is taken during the acquisition interval</span>
+<span class="sd">			* ``peakdetect``: PEAKdetect specifies the display of high-low range of the</span>
+<span class="sd">			  samples taken from a single waveform acquisition.</span>
+<span class="sd">			* ``hires``: HIRes specifies Hi Res mode where the displayed data point</span>
+<span class="sd">			  value is the average of all the samples taken during the acquisition interval</span>
+<span class="sd">			* ``average``: AVErage specifies averaging mode, in which the resulting</span>
+<span class="sd">			  waveform shows an average of SAMple data points from several separate</span>
+<span class="sd">			  waveform acquisitions.</span>
+<span class="sd">			* ``envelope``: ENVelope specifies envelope mode, where the resulting waveform</span>
+<span class="sd">			  displays the range of PEAKdetect from continued waveform acquisitions.</span>
+
+<span class="sd">		*Not cached*</span>
+
+<span class="sd">		:Getter: Return the acquisition mode</span>
+
+<span class="sd">		:Setter: Set the acquisition mode</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;ACQuire:MODe?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+	<span class="nd">@mode</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modes</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid mode </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">. Valid modes are </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_modes</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;ACQuire:MODe </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">stop_after</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;Wether the instrument continually acquires waves or acquires a single sequence. Valid modes are:</span>
+<span class="sd">			* ``sequence``: specifies that the next acquisition will be a single-sequence acquisition</span>
+<span class="sd">			* ``runstop``: specifies that the instrument will continually acquire data, if</span>
+<span class="sd">			  ACQuire:STATE is turned on.</span>
+
+<span class="sd">		*Not cached*</span>
+
+<span class="sd">		:Getter: Return the acquisition mode</span>
+
+<span class="sd">		:Setter: Set the acquisition mode.</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;ACQuire:STOPAfter?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+	<span class="nd">@stop_after</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">stop_after</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_afters</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid stop after </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">. Valid stop afters are </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_stop_afters</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;ACQuire:STOPAfter </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">num_seq</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;In single sequence acquisition mode, specify the number of acquisitions or measurements</span>
+<span class="sd">		that comprise the sequence.</span>
+
+<span class="sd">		*Not cached*</span>
+
+<span class="sd">		:Getter: Return the number of acquisitions or measurements</span>
+
+<span class="sd">		:Setter: Set the number of acquisitions or measurements</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;ACQuire:SEQuence:NUMSEQuence?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+	<span class="nd">@num_seq</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">num_seq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+		<span class="n">stopafter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_after</span>
+		<span class="k">if</span> <span class="n">stopafter</span> <span class="o">!=</span> <span class="s1">&#39;sequence&#39;</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Cannot set number of acquisitions or measurements in </span><span class="si">{</span><span class="n">stopafter</span><span class="si">}</span><span class="s1"> mode. Must be in sequence mode.&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid number of acquisitions or measurements </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">. Must be an int.&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;ACQuire:SEQuence:NUMSEQuence </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">horiz_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The horizontal operating mode. Valid values are:</span>
+<span class="sd">			* ``auto``: automatically adjusts the sample rate and record length to provide</span>
+<span class="sd">			  a high acquisition rate in Fast Acq or signal fidelity in analysis</span>
+<span class="sd">			* ``manual``: lets you change the sample rate, horizontal scale, and record length.</span>
+<span class="sd">			  These values interact. For example, when you change record length</span>
+<span class="sd">			  then the horizontal scale also changes.</span>
+
+<span class="sd">		*Not cached*</span>
+
+<span class="sd">		:Getter: Return the mode</span>
+
+<span class="sd">		:Setter: Set the mode</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;HORizontal:MODe?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+	<span class="nd">@horiz_mode</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">horiz_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_horiz_modes</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid mode </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">. Valid modes are </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_horiz_modes</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;HORizontal:MODe </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">horiz_sample_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The horizontal sample rate of the waveform.</span>
+
+<span class="sd">		*Not cached*</span>
+
+<span class="sd">		:Getter: Return the sample rate in Hz</span>
+
+<span class="sd">		:Setter: Set the sample rate in Hz (int or float)</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;HORizontal:MODe:SAMPlerate?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+	<span class="nd">@horiz_sample_rate</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">horiz_sample_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">):</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid sample rate </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">. Must be a float or an int.&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;HORizontal:MODe:SAMPlerate </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="c1"># Check if the sample rate was set correctly</span>
+		<span class="n">actual</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">horiz_sample_rate</span>
+		<span class="k">if</span> <span class="n">actual</span> <span class="o">!=</span> <span class="n">value</span><span class="p">:</span>
+			<span class="n">scope_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Failed to set horizontal sample rate to </span><span class="si">%f</span><span class="s1">. Got </span><span class="si">%f</span><span class="s1"> instead.&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">actual</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">horiz_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The horizontal scale of the waveform.</span>
+
+<span class="sd">		*Not cached*</span>
+
+<span class="sd">		:Getter: Return the scale in s</span>
+
+<span class="sd">		:Setter: Set the scale in s (int or float)</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;HORizontal:SCAle?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+	<span class="nd">@horiz_scale</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">horiz_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">):</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid scale </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">. Must be a float or an int.&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;HORizontal:SCAle </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="c1"># Check if the scale was set correctly</span>
+		<span class="n">actual</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">horiz_scale</span>
+		<span class="k">if</span> <span class="n">actual</span> <span class="o">!=</span> <span class="n">value</span><span class="p">:</span>
+			<span class="n">scope_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Failed to set horizontal scale to </span><span class="si">%f</span><span class="s1">. Got </span><span class="si">%f</span><span class="s1"> instead.&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">actual</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">horiz_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The horizontal position of the waveform in percent of the screen:</span>
+<span class="sd">		0% is the left edge of the screen and 100% is the right edge of the screen.</span>
+
+<span class="sd">		*Not cached*</span>
+
+<span class="sd">		:Getter: Return the position in %</span>
+
+<span class="sd">		:Setter: Set the position in % (int or float)</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;HORizontal:POSition?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+	<span class="nd">@horiz_pos</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">horiz_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">):</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid position </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">. Must be a float or an int.&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid position </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">. Must be between 0 and 100.&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;HORizontal:POSition </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="c1"># Check if the position was set correctly</span>
+		<span class="n">actual</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">horiz_pos</span>
+		<span class="k">if</span> <span class="n">actual</span> <span class="o">!=</span> <span class="n">value</span><span class="p">:</span>
+			<span class="n">scope_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Failed to set horizontal position to </span><span class="si">%f</span><span class="s1">. Got </span><span class="si">%f</span><span class="s1"> instead.&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">actual</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">horiz_record_length</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The horizontal record length of the waveform.</span>
+
+<span class="sd">		*Not cached*</span>
+
+<span class="sd">		:Getter: Return the record length</span>
+
+<span class="sd">		:Setter: Set the record length</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;HORizontal:MODe:RECOrdlength?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+	<span class="nd">@horiz_record_length</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">horiz_record_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid record length </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">. Must be an int.&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;HORizontal:MODe:RECOrdlength </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">wfm_src</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;Source of the retrieved waveform (analog FlexChannel(s) source(s)). Valid values are ``chN`` (Analog channel n).</span>
+
+<span class="sd">		*Not cached*</span>
+
+<span class="sd">		:Getter: Return the source</span>
+
+<span class="sd">		:Setter: Set the source</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;DATa:SOUrce?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+	<span class="nd">@wfm_src</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">wfm_src</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+		<span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+			<span class="n">matches</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;ch(\d+)&#39;</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+			<span class="k">if</span> <span class="ow">not</span> <span class="n">matches</span> <span class="ow">or</span> <span class="nb">int</span><span class="p">(</span><span class="n">matches</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ch_a_count</span><span class="p">:</span>
+				<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid source </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1">. Valid sources are ch1-ch</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_ch_a_count</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;DATa:SOUrce </span><span class="si">{</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">wfm_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The starting data point for waveform transfer.</span>
+
+<span class="sd">		*Not cached*</span>
+
+<span class="sd">		:Getter: Return the start index</span>
+
+<span class="sd">		:Setter: Set the start index</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;DATa:STARt?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+	<span class="nd">@wfm_start</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">wfm_start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid start index </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">. Must be an int.&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;DATa:STARt </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">wfm_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The last data point that will be transferred when retrieving the waveform.</span>
+
+<span class="sd">		*Not cached*</span>
+
+<span class="sd">		:Getter: Return the stop index</span>
+
+<span class="sd">		:Setter: Set the stop index</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;DATa:STOP?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+	<span class="nd">@wfm_stop</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">wfm_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid stop index </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">. Must be an int.&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;DATa:STOP </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">wfm_len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The number of data points in the waveform.</span>
+
+<span class="sd">		*Not cached*</span>
+
+<span class="sd">		:Getter: Return the number of data points</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;WFMOutpre:NR_Pt?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">wfm_encoding</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The encoding of the waveform data.  Valid values are:</span>
+<span class="sd">			* ``binary``: Binary</span>
+<span class="sd">			* ``ascii``: ASCII</span>
+
+<span class="sd">		*Cached*</span>
+
+<span class="sd">		:Getter: Return the encoding</span>
+
+<span class="sd">		:Setter: Set the encoding</span>
+
+<span class="sd">		Raises:</span>
+<span class="sd">			ValueError: Invalid encoding</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_encoding</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_encoding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;WFMOutpre:ENCdg?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_encoding</span>
+	<span class="nd">@wfm_encoding</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">wfm_encoding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wfm_encodings</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid encoding </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">. Valid encodings are </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_wfm_encodings</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_encoding</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+			<span class="k">return</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_encoding</span> <span class="o">=</span> <span class="n">value</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;WFMOutpre:ENCdg </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">wfm_binary_format</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The data format of binary waveform data. Valid values are:</span>
+<span class="sd">			* ``ri``: Signed integer</span>
+<span class="sd">			* ``rp``: Unsigned integer</span>
+<span class="sd">			* ``fp``: Floating point</span>
+
+<span class="sd">		*Cached*</span>
+
+<span class="sd">		:Getter: Return the data format</span>
+
+<span class="sd">		:Setter: Set the data format</span>
+
+<span class="sd">		Raises:</span>
+<span class="sd">			ValueError: Invalid data format</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_format</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;WFMOutpre:BN_Fmt?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_format</span>
+	<span class="nd">@wfm_binary_format</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">wfm_binary_format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wfm_binary_formats</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid binary format </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">. Valid binary formats are </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_wfm_binary_formats</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_format</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+			<span class="k">return</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_format</span> <span class="o">=</span> <span class="n">value</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;WFMOutpre:BN_Fmt </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">wfm_byte_nr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The number of bytes per data point in the waveform.</span>
+
+<span class="sd">		*Cached*</span>
+
+<span class="sd">		:Getter: Return the number of bytes per data point</span>
+
+<span class="sd">		:Setter: Set the number of bytes per data point</span>
+<span class="sd">			NOTE: Check the programmer manual for valid values § WFMOutpre:BYT_Nr. If unsure, clear the cache with :code:`scope._clear_cache()` and read back the value</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_byte_nr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_byte_nr</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;WFMOutpre:BYT_Nr?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_byte_nr</span>
+	<span class="nd">@wfm_byte_nr</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">wfm_byte_nr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid number of bytes per data point </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">. Must be an int.&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wfm_byte_nrs</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid number of bytes per data point </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">. Valid values are </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_wfm_byte_nrs</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_byte_nr</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+			<span class="k">return</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_byte_nr</span> <span class="o">=</span> <span class="n">value</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;WFMOutpre:BYT_Nr </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">wfm_byte_order</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The byte order of the waveform data. Valid values are:</span>
+<span class="sd">			* ``lsb``: Least significant byte first</span>
+<span class="sd">			* ``msb``: Most significant byte first</span>
+
+<span class="sd">		*Cached*</span>
+
+<span class="sd">		:Getter: Return the byte order</span>
+
+<span class="sd">		:Setter: Set the byte order</span>
+
+<span class="sd">		Raises:</span>
+<span class="sd">			ValueError: Invalid byte order</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;WFMOutpre:BYT_Or?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_order</span>
+	<span class="nd">@wfm_byte_order</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">wfm_byte_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wfm_byte_orders</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid byte order </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">. Valid byte orders are </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_wfm_byte_orders</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_order</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+			<span class="k">return</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_wfm_order</span> <span class="o">=</span> <span class="n">value</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;WFMOutpre:BYT_Or </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">is_big_endian</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;Return True if the byte order is big endian, False otherwise.</span>
+
+<span class="sd">		*Cached*</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wfm_byte_order</span> <span class="o">==</span> <span class="s1">&#39;msb&#39;</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">curvestream</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;Enable or disable curvestream mode.</span>
+
+<span class="sd">		*Cached*</span>
+
+<span class="sd">		:Getter: Return the curvestream state</span>
+
+<span class="sd">		:Setter: Set the curvestream state</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_curvestream</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;*CLS&#39;</span><span class="p">)</span> <span class="c1"># If we don&#39;t know, better disable it to be sure</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">_cached_curvestream</span> <span class="o">=</span> <span class="kc">False</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_curvestream</span>
+	<span class="nd">@curvestream</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">curvestream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_curvestream</span> <span class="o">=</span> <span class="n">value</span>
+		<span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;CURVestream?&#39;</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;*CLS&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">fast_acq</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;Enable or disable fast acquisition mode.</span>
+
+<span class="sd">		*Cached*</span>
+
+<span class="sd">		:Getter: Return the fast acquisition state</span>
+
+<span class="sd">		:Setter: Set the fast acquisition state</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_fast_acq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">_cached_fast_acq</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;ACQuire:FASTAcq:STATE?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_fast_acq</span>
+	<span class="nd">@fast_acq</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">fast_acq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_fast_acq</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+			<span class="k">return</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_fast_acq</span> <span class="o">=</span> <span class="n">value</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;ACQuire:FASTAcq:STATE </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MSO4Acquisition.get_datatype">
+<a class="viewcode-back" href="../../pyMSO4.html#pyMSO4.acquisition.MSO4Acquisition.get_datatype">[docs]</a>
+	<span class="k">def</span> <span class="nf">get_datatype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BINARY_DATATYPES</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;Get the data type of the binary waveform data in struct.pack form. Does not return endianess.</span>
+
+<span class="sd">		*Cached*</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wfm_datatypes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">wfm_byte_nr</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">wfm_binary_format</span><span class="p">]</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, ceres-c.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

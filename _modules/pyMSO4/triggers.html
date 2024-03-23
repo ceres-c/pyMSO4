@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyMSO4.triggers &mdash; pyMSO4 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            pyMSO4
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../building.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">pyMSO4</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyMSO4.triggers</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyMSO4.triggers</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Type</span>
+
+<span class="kn">import</span> <span class="nn">pyvisa</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">scope_logger</span>
+
+<div class="viewcode-block" id="MSO4TriggerBase">
+<a class="viewcode-back" href="../../pyMSO4.html#pyMSO4.triggers.MSO4TriggerBase">[docs]</a>
+<span class="k">class</span> <span class="nc">MSO4TriggerBase</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">DisableNewAttr</span><span class="p">):</span>
+<span class="w">	</span><span class="sd">&#39;&#39;&#39;Base trigger for the MSO 4-Series, used for settings shared by all trigger types&#39;&#39;&#39;</span>
+
+	<span class="n">_sources</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;auxiliary&#39;</span><span class="p">,</span> <span class="s1">&#39;aux&#39;</span><span class="p">,</span> <span class="s1">&#39;line&#39;</span><span class="p">]</span> <span class="c1"># NOTE: Digital channels are not supported yet</span>
+	<span class="n">_couplings</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;dc&#39;</span><span class="p">,</span> <span class="s1">&#39;hfrej&#39;</span><span class="p">,</span> <span class="s1">&#39;lfrej&#39;</span><span class="p">,</span> <span class="s1">&#39;noiserej&#39;</span><span class="p">]</span>
+	<span class="n">_events</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">]</span>
+	<span class="n">_modes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="s1">&#39;normal&#39;</span><span class="p">]</span>
+
+	<span class="n">_type</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="MSO4TriggerBase.__init__">
+<a class="viewcode-back" href="../../pyMSO4.html#pyMSO4.triggers.MSO4TriggerBase.__init__">[docs]</a>
+	<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">res</span><span class="p">:</span> <span class="n">pyvisa</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">MessageBasedResource</span><span class="p">,</span> <span class="n">ch_a_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;A&#39;</span><span class="p">):</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;Create a new trigger object</span>
+
+<span class="sd">		Args:</span>
+<span class="sd">			res: The VISA resource to use for communication</span>
+<span class="sd">			ch_a_count: The number of analog channels available on the scope</span>
+<span class="sd">			event: The event channel (``A`` or ``B``) to use as a trigger.</span>
+<span class="sd">				See: 4/5/6 Series MSO Help § Trigger on sequential events (A and B triggers)</span>
+<span class="sd">				(https://www.tek.com/en/sitewide-content/manuals/4/5/6/4-5-6-series-mso-help)</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="p">:</span> <span class="n">pyvisa</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">MessageBasedResource</span> <span class="o">=</span> <span class="n">res</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_ch_a_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">ch_a_count</span>
+		<span class="k">if</span> <span class="n">event</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">MSO4TriggerBase</span><span class="o">.</span><span class="n">_events</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid event </span><span class="si">{</span><span class="n">event</span><span class="si">}</span><span class="s1">. Valid events: </span><span class="si">{</span><span class="n">MSO4TriggerBase</span><span class="o">.</span><span class="n">_events</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_event</span> <span class="o">=</span> <span class="n">event</span>
+
+		<span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_type</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Can&#39;t instantiate MSO4TriggerBase directly. Use a subclass instead.&quot;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:TYPE </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_type</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_source</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_coupling</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_level</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_mode</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="MSO4TriggerBase.clear_caches">
+<a class="viewcode-back" href="../../pyMSO4.html#pyMSO4.triggers.MSO4TriggerBase.clear_caches">[docs]</a>
+	<span class="k">def</span> <span class="nf">clear_caches</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;Resets the local configuration cache so that values will be fetched from</span>
+<span class="sd">		the scope.</span>
+
+<span class="sd">		This is useful when the scope configuration is (potentially) changed externally.</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_source</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_coupling</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_level</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_mode</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="MSO4TriggerBase.force">
+<a class="viewcode-back" href="../../pyMSO4.html#pyMSO4.triggers.MSO4TriggerBase.force">[docs]</a>
+	<span class="k">def</span> <span class="nf">force</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;Force the trigger to occur immediately&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;TRIGGER FORCe&#39;</span><span class="p">)</span></div>
+
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">source</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The source of the event currently configured as a trigger. Valid values are</span>
+<span class="sd">		``chN`` (Analog channel n) and ``auxiliary``, ``aux``, ``line``</span>
+
+<span class="sd">		*Cached*</span>
+
+<span class="sd">		:Getter: Return the current trigger source</span>
+
+<span class="sd">		:Setter: Set the trigger source</span>
+
+<span class="sd">		Raises:</span>
+<span class="sd">			ValueError: if value is not one of the allowed strings</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_source</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">_cached_source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_type</span><span class="si">}</span><span class="s1">:SOURCE?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_source</span>
+	<span class="nd">@source</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+		<span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+		<span class="n">valid</span> <span class="o">=</span> <span class="kc">False</span>
+		<span class="k">if</span> <span class="n">src</span><span class="o">.</span><span class="n">lower</span><span class="p">()[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ch&#39;</span><span class="p">:</span>
+			<span class="k">try</span><span class="p">:</span>
+				<span class="n">ch_num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">src</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+				<span class="k">if</span> <span class="n">ch_num</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ch_a_count</span><span class="p">:</span>
+					<span class="n">valid</span> <span class="o">=</span> <span class="kc">True</span>
+			<span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+				<span class="k">pass</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">valid</span> <span class="o">=</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">MSO4TriggerBase</span><span class="o">.</span><span class="n">_sources</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="n">valid</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid trigger source </span><span class="si">{</span><span class="n">src</span><span class="si">}</span><span class="s1">. Valid sources are ch1-ch</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_ch_a_count</span><span class="si">}</span><span class="s1"> and </span><span class="si">{</span><span class="n">MSO4TriggerBase</span><span class="o">.</span><span class="n">_sources</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_source</span> <span class="o">==</span> <span class="n">src</span><span class="p">:</span>
+			<span class="k">return</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_source</span> <span class="o">=</span> <span class="n">src</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_type</span><span class="si">}</span><span class="s1">:SOURCE </span><span class="si">{</span><span class="n">src</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">coupling</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The coupling of the trigger source. Valid couplings are ``dc``, ``hfrej``, ``lfrej``, ``noiserej``</span>
+
+<span class="sd">		*Cached*</span>
+
+<span class="sd">		:Getter: Return the current trigger coupling</span>
+
+<span class="sd">		:Setter: Set the trigger coupling</span>
+
+<span class="sd">		Raises:</span>
+<span class="sd">			ValueError: if value is not one of the allowed strings</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_coupling</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">_cached_coupling</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_type</span><span class="si">}</span><span class="s1">:COUPLING?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_coupling</span>
+	<span class="nd">@coupling</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">coupling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coupling</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">coupling</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">MSO4TriggerBase</span><span class="o">.</span><span class="n">_couplings</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid trigger coupling </span><span class="si">{</span><span class="n">coupling</span><span class="si">}</span><span class="s1">. Valid coupling: </span><span class="si">{</span><span class="n">MSO4TriggerBase</span><span class="o">.</span><span class="n">_couplings</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_coupling</span> <span class="o">==</span> <span class="n">coupling</span><span class="p">:</span>
+			<span class="k">return</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_coupling</span> <span class="o">=</span> <span class="n">coupling</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_type</span><span class="si">}</span><span class="s1">:COUPLING </span><span class="si">{</span><span class="n">coupling</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">level</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The trigger level</span>
+
+<span class="sd">		*Cached*</span>
+
+<span class="sd">		:Getter: Return the current trigger level</span>
+
+<span class="sd">		:Setter: Set the trigger level (int or float)</span>
+
+<span class="sd">		Raises:</span>
+<span class="sd">			ValueError: if value is not an int or float</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_level</span><span class="p">:</span>
+			<span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:LEVEL:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s1">?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+			<span class="k">try</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">_cached_level</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
+			<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+				<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Got invalid trigger level from oscilloscope `</span><span class="si">{</span><span class="n">resp</span><span class="si">}</span><span class="s1">`. Must be a float.&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">exc</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_level</span>
+	<span class="nd">@level</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid trigger level </span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s1">. Must be a float or an int.&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_level</span> <span class="o">==</span> <span class="n">level</span><span class="p">:</span>
+			<span class="k">return</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:LEVEL:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">level</span><span class="si">:</span><span class="s1">.4e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_level</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_level</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_level</span> <span class="o">!=</span> <span class="n">level</span><span class="p">:</span>
+			<span class="n">scope_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Failed to set trigger level to </span><span class="si">%f</span><span class="s1">. Got </span><span class="si">%f</span><span class="s1"> instead.&#39;</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_level</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The trigger mode (``auto``/``normal``)</span>
+
+<span class="sd">		*Cached*</span>
+
+<span class="sd">		:Getter: Return the current trigger mode</span>
+
+<span class="sd">		:Setter: Set the trigger mode</span>
+
+<span class="sd">		Raises:</span>
+<span class="sd">			NotImplementedError: if trigger event is not A</span>
+<span class="sd">			ValueError: if value is not one of the allowed strings</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event</span> <span class="o">!=</span> <span class="s1">&#39;A&#39;</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Trigger mode is only supported for event A.&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_mode</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">_cached_mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;TRIGGER:A:MODe?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_mode</span>
+	<span class="nd">@mode</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event</span> <span class="o">!=</span> <span class="s1">&#39;A&#39;</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Trigger mode is only supported for event A.&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">MSO4TriggerBase</span><span class="o">.</span><span class="n">_modes</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid trigger mode </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s1">. Valid modes: </span><span class="si">{</span><span class="n">MSO4TriggerBase</span><span class="o">.</span><span class="n">_modes</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_mode</span> <span class="o">==</span> <span class="n">mode</span><span class="p">:</span>
+			<span class="k">return</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_mode</span> <span class="o">=</span> <span class="n">mode</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:A:MODe </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MSO4EdgeTrigger">
+<a class="viewcode-back" href="../../pyMSO4.html#pyMSO4.triggers.MSO4EdgeTrigger">[docs]</a>
+<span class="k">class</span> <span class="nc">MSO4EdgeTrigger</span><span class="p">(</span><span class="n">MSO4TriggerBase</span><span class="p">):</span>
+<span class="w">	</span><span class="sd">&#39;&#39;&#39;Edge trigger&#39;&#39;&#39;</span>
+
+	<span class="n">_type</span> <span class="o">=</span> <span class="s1">&#39;EDGE&#39;</span>
+
+	<span class="n">_slopes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rise&#39;</span><span class="p">,</span> <span class="s1">&#39;fall&#39;</span><span class="p">,</span> <span class="s1">&#39;either&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="MSO4EdgeTrigger.__init__">
+<a class="viewcode-back" href="../../pyMSO4.html#pyMSO4.triggers.MSO4EdgeTrigger.__init__">[docs]</a>
+	<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">res</span><span class="p">:</span> <span class="n">pyvisa</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">MessageBasedResource</span><span class="p">,</span> <span class="n">ch_a_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;A&#39;</span><span class="p">):</span>
+		<span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">ch_a_count</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_edge_slope</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">disable_newattr</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MSO4EdgeTrigger.clear_caches">
+<a class="viewcode-back" href="../../pyMSO4.html#pyMSO4.triggers.MSO4EdgeTrigger.clear_caches">[docs]</a>
+	<span class="k">def</span> <span class="nf">clear_caches</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">clear_caches</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_edge_slope</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">edge_slope</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The edge slope (``rise``/``fall``/``either``)</span>
+
+<span class="sd">		*Cached*</span>
+
+<span class="sd">		:Getter: Return the current edge slope</span>
+
+<span class="sd">		:Setter: Set the edge slope</span>
+
+<span class="sd">		Raises:</span>
+<span class="sd">			ValueError: if value is not one of the allowed strings</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_edge_slope</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">_cached_edge_slope</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:EDGE:SLOpe?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_edge_slope</span>
+	<span class="nd">@edge_slope</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">edge_slope</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slope</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">slope</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">MSO4EdgeTrigger</span><span class="o">.</span><span class="n">_slopes</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid edge slope </span><span class="si">{</span><span class="n">slope</span><span class="si">}</span><span class="s1">. Valid slopes: </span><span class="si">{</span><span class="n">MSO4EdgeTrigger</span><span class="o">.</span><span class="n">_slopes</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_edge_slope</span> <span class="o">==</span> <span class="n">slope</span><span class="p">:</span>
+			<span class="k">return</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_edge_slope</span> <span class="o">=</span> <span class="n">slope</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:EDGE:SLOpe </span><span class="si">{</span><span class="n">slope</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MSO4WidthTrigger">
+<a class="viewcode-back" href="../../pyMSO4.html#pyMSO4.triggers.MSO4WidthTrigger">[docs]</a>
+<span class="k">class</span> <span class="nc">MSO4WidthTrigger</span><span class="p">(</span><span class="n">MSO4TriggerBase</span><span class="p">):</span>
+<span class="w">	</span><span class="sd">&#39;&#39;&#39;Pulse Width trigger</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+
+	<span class="n">_type</span> <span class="o">=</span> <span class="s1">&#39;WIDth&#39;</span>
+
+	<span class="n">_whens</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lessthan&#39;</span><span class="p">,</span> <span class="s1">&#39;morethan&#39;</span><span class="p">,</span> <span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="s1">&#39;unequal&#39;</span><span class="p">,</span> <span class="s1">&#39;within&#39;</span><span class="p">,</span> <span class="s1">&#39;outside&#39;</span><span class="p">]</span>
+	<span class="n">_polarities</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;positive&#39;</span><span class="p">,</span> <span class="s1">&#39;negative&#39;</span><span class="p">]</span>
+	<span class="n">_logicqualifications</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="s1">&#39;off&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="MSO4WidthTrigger.__init__">
+<a class="viewcode-back" href="../../pyMSO4.html#pyMSO4.triggers.MSO4WidthTrigger.__init__">[docs]</a>
+	<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">res</span><span class="p">:</span> <span class="n">pyvisa</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">MessageBasedResource</span><span class="p">,</span> <span class="n">ch_a_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;A&#39;</span><span class="p">):</span>
+		<span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">ch_a_count</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_when</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_lowlimit</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_highlimit</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_polarity</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_logicqualification</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">disable_newattr</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MSO4WidthTrigger.clear_caches">
+<a class="viewcode-back" href="../../pyMSO4.html#pyMSO4.triggers.MSO4WidthTrigger.clear_caches">[docs]</a>
+	<span class="k">def</span> <span class="nf">clear_caches</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">clear_caches</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_when</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_lowlimit</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_highlimit</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_polarity</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_logicqualification</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">lowlimit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The low limit of the pulse width (in seconds)</span>
+
+<span class="sd">		*Cached*</span>
+
+<span class="sd">		:Getter: Return the current low limit</span>
+
+<span class="sd">		:Setter: Set the low limit (int or float)</span>
+
+<span class="sd">		Raises:</span>
+<span class="sd">			ValueError: if value is not an int or float</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_lowlimit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:PULSEWidth:LOWLimit?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+			<span class="k">try</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">_cached_lowlimit</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
+			<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+				<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Got invalid trigger low limit from oscilloscope `</span><span class="si">{</span><span class="n">resp</span><span class="si">}</span><span class="s1">`. Must be a float.&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">exc</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_lowlimit</span>
+	<span class="nd">@lowlimit</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">lowlimit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">low</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid trigger low limit </span><span class="si">{</span><span class="n">low</span><span class="si">}</span><span class="s1">. Must be a float or an int.&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_lowlimit</span> <span class="o">==</span> <span class="n">low</span><span class="p">:</span>
+			<span class="k">return</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_lowlimit</span> <span class="o">=</span> <span class="n">low</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:PULSEWidth:LOWLimit </span><span class="si">{</span><span class="n">low</span><span class="si">:</span><span class="s1">.4e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">highlimit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The high limit of the pulse width (in seconds)</span>
+
+<span class="sd">		*Cached*</span>
+
+<span class="sd">		:Getter: Return the current high limit</span>
+
+<span class="sd">		:Setter: Set the high limit (int or float)</span>
+
+<span class="sd">		Raises:</span>
+<span class="sd">			ValueError: if value is not an int or float</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_highlimit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:PULSEWidth:HIGHLimit?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+			<span class="k">try</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">_cached_highlimit</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
+			<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+				<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Got invalid trigger high limit from oscilloscope `</span><span class="si">{</span><span class="n">resp</span><span class="si">}</span><span class="s1">`. Must be a float.&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">exc</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_highlimit</span>
+	<span class="nd">@highlimit</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">highlimit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">high</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">high</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">high</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid trigger high limit </span><span class="si">{</span><span class="n">high</span><span class="si">}</span><span class="s1">. Must be a float or an int.&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_highlimit</span> <span class="o">==</span> <span class="n">high</span><span class="p">:</span>
+			<span class="k">return</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_highlimit</span> <span class="o">=</span> <span class="n">high</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:PULSEWidth:HIGHLimit </span><span class="si">{</span><span class="n">high</span><span class="si">:</span><span class="s1">.4e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">when</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;Trigger when a pulse is detected with a width ``lessthan``, ``morethan``,</span>
+<span class="sd">		``equal``, ``unequal`` the width specified with :attr:`~MSO4WidthTrigger.lowlimit`.</span>
+<span class="sd">		When both :attr:`~MSO4WidthTrigger.lowlimit` and :attr:`~MSO4WidthTrigger.highlimit`</span>
+<span class="sd">		are set, the trigger can occur when a pulse is either ``within`` or ``outside``</span>
+<span class="sd">		the specified width range.</span>
+
+<span class="sd">		*Cached*</span>
+
+<span class="sd">		:Getter: Return the current when</span>
+
+<span class="sd">		:Setter: Set the when (str)</span>
+
+<span class="sd">		Raises:</span>
+<span class="sd">			ValueError: if value is not one of the allowed strings</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_when</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">_cached_when</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:PULSEWidth:WHEn?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_when</span>
+	<span class="nd">@when</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">when</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">when</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">when</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">MSO4WidthTrigger</span><span class="o">.</span><span class="n">_whens</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid trigger when </span><span class="si">{</span><span class="n">when</span><span class="si">}</span><span class="s1">. Valid when: </span><span class="si">{</span><span class="n">MSO4WidthTrigger</span><span class="o">.</span><span class="n">_whens</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_when</span> <span class="o">==</span> <span class="n">when</span><span class="p">:</span>
+			<span class="k">return</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_when</span> <span class="o">=</span> <span class="n">when</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:PULSEWidth:WHEn </span><span class="si">{</span><span class="n">when</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">polarity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The polarity of the pulse (``positive``/``negative``)</span>
+
+<span class="sd">		*Cached*</span>
+
+<span class="sd">		:Getter: Return the current polarity</span>
+
+<span class="sd">		:Setter: Set the polarity (str)</span>
+
+<span class="sd">		Raises:</span>
+<span class="sd">			ValueError: if value is not one of the allowed strings</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_polarity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">_cached_polarity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:PULSEWidth:POLarity?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_polarity</span>
+	<span class="nd">@polarity</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">polarity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">polarity</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">polarity</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">MSO4WidthTrigger</span><span class="o">.</span><span class="n">_polarities</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid trigger polarity </span><span class="si">{</span><span class="n">polarity</span><span class="si">}</span><span class="s1">. Valid polarity: </span><span class="si">{</span><span class="n">MSO4WidthTrigger</span><span class="o">.</span><span class="n">_polarities</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_polarity</span> <span class="o">==</span> <span class="n">polarity</span><span class="p">:</span>
+			<span class="k">return</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_polarity</span> <span class="o">=</span> <span class="n">polarity</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:PULSEWidth:POLarity </span><span class="si">{</span><span class="n">polarity</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	<span class="nd">@property</span>
+	<span class="k">def</span> <span class="nf">logicqualification</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">		</span><span class="sd">&#39;&#39;&#39;The logic qualification (``on``/``off``). See the oscilloscope help (p. 122) for more information.</span>
+
+<span class="sd">		*Cached*</span>
+
+<span class="sd">		:Getter: Return the current logic qualification</span>
+
+<span class="sd">		:Setter: Set the logic qualification (str)</span>
+
+<span class="sd">		Raises:</span>
+<span class="sd">			ValueError: if value is not one of the allowed strings</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_logicqualification</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">_cached_logicqualification</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:PULSEWidth:LOGICQUALification?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_logicqualification</span>
+	<span class="nd">@logicqualification</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">logicqualification</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logic</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">logic</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">MSO4WidthTrigger</span><span class="o">.</span><span class="n">_logicqualifications</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid trigger logic qualification </span><span class="si">{</span><span class="n">logic</span><span class="si">}</span><span class="s1">. Valid logic qualification: </span><span class="si">{</span><span class="n">MSO4WidthTrigger</span><span class="o">.</span><span class="n">_logicqualifications</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_logicqualification</span> <span class="o">==</span> <span class="n">logic</span><span class="p">:</span>
+			<span class="k">return</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_cached_logicqualification</span> <span class="o">=</span> <span class="n">logic</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TRIGGER:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="si">}</span><span class="s1">:PULSEWidth:LOGICQUALification </span><span class="si">{</span><span class="n">logic</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="n">scope_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Logic qualification input define setting are not yet implemented.&#39;</span><span class="p">)</span></div>
+
+
+<span class="n">MSO4Triggers</span> <span class="o">=</span> <span class="n">Type</span><span class="p">[</span><span class="n">MSO4EdgeTrigger</span><span class="p">]</span> <span class="o">|</span> <span class="n">Type</span><span class="p">[</span><span class="n">MSO4WidthTrigger</span><span class="p">]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, ceres-c.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

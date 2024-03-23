@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyMSO4.pyMSO4 module &mdash; pyMSO4 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=2709fde1"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="API" href="api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            pyMSO4
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="building.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">API</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">pyMSO4.pyMSO4 module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4"><code class="docutils literal notranslate"><span class="pre">MSO4</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.__init__"><code class="docutils literal notranslate"><span class="pre">MSO4.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.rm"><code class="docutils literal notranslate"><span class="pre">MSO4.rm</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.sc"><code class="docutils literal notranslate"><span class="pre">MSO4.sc</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.acq"><code class="docutils literal notranslate"><span class="pre">MSO4.acq</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.ch_a"><code class="docutils literal notranslate"><span class="pre">MSO4.ch_a</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.debug"><code class="docutils literal notranslate"><span class="pre">MSO4.debug</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.connect_status"><code class="docutils literal notranslate"><span class="pre">MSO4.connect_status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.clear_cache"><code class="docutils literal notranslate"><span class="pre">MSO4.clear_cache()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.con"><code class="docutils literal notranslate"><span class="pre">MSO4.con()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.dis"><code class="docutils literal notranslate"><span class="pre">MSO4.dis()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.reboot"><code class="docutils literal notranslate"><span class="pre">MSO4.reboot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.reset"><code class="docutils literal notranslate"><span class="pre">MSO4.reset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.busy"><code class="docutils literal notranslate"><span class="pre">MSO4.busy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.cls"><code class="docutils literal notranslate"><span class="pre">MSO4.cls()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.clear_cmd"><code class="docutils literal notranslate"><span class="pre">MSO4.clear_cmd()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.clear_buffers"><code class="docutils literal notranslate"><span class="pre">MSO4.clear_buffers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.ch_a_enable"><code class="docutils literal notranslate"><span class="pre">MSO4.ch_a_enable()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.trigger"><code class="docutils literal notranslate"><span class="pre">MSO4.trigger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.timeout"><code class="docutils literal notranslate"><span class="pre">MSO4.timeout</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.ch_a_num"><code class="docutils literal notranslate"><span class="pre">MSO4.ch_a_num</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.display"><code class="docutils literal notranslate"><span class="pre">MSO4.display</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pyMSO4.pyMSO4.usb_reboot"><code class="docutils literal notranslate"><span class="pre">usb_reboot()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pyMSO4.acquisition">pyMSO4.acquisition module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.__init__"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.clear_caches"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.clear_caches()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.configured"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.configured()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.mode"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.mode</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.stop_after"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.stop_after</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.num_seq"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.num_seq</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.horiz_mode"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.horiz_mode</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.horiz_sample_rate"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.horiz_sample_rate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.horiz_scale"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.horiz_scale</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.horiz_pos"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.horiz_pos</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.horiz_record_length"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.horiz_record_length</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.wfm_src"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.wfm_src</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.wfm_start"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.wfm_start</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.wfm_stop"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.wfm_stop</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.wfm_len"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.wfm_len</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.wfm_encoding"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.wfm_encoding</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.wfm_binary_format"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.wfm_binary_format</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.wfm_byte_nr"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.wfm_byte_nr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.wfm_byte_order"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.wfm_byte_order</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.is_big_endian"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.is_big_endian</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.curvestream"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.curvestream</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.fast_acq"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.fast_acq</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition.get_datatype"><code class="docutils literal notranslate"><span class="pre">MSO4Acquisition.get_datatype()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pyMSO4.channel">pyMSO4.channel module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pyMSO4.channel.MSO4AnalogChannel"><code class="docutils literal notranslate"><span class="pre">MSO4AnalogChannel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.channel.MSO4AnalogChannel.__init__"><code class="docutils literal notranslate"><span class="pre">MSO4AnalogChannel.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.channel.MSO4AnalogChannel.clear_caches"><code class="docutils literal notranslate"><span class="pre">MSO4AnalogChannel.clear_caches()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.channel.MSO4AnalogChannel.enable"><code class="docutils literal notranslate"><span class="pre">MSO4AnalogChannel.enable</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.channel.MSO4AnalogChannel.scale"><code class="docutils literal notranslate"><span class="pre">MSO4AnalogChannel.scale</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.channel.MSO4AnalogChannel.position"><code class="docutils literal notranslate"><span class="pre">MSO4AnalogChannel.position</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pyMSO4.triggers">pyMSO4.triggers module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pyMSO4.triggers.MSO4TriggerBase"><code class="docutils literal notranslate"><span class="pre">MSO4TriggerBase</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.triggers.MSO4TriggerBase.__init__"><code class="docutils literal notranslate"><span class="pre">MSO4TriggerBase.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.triggers.MSO4TriggerBase.clear_caches"><code class="docutils literal notranslate"><span class="pre">MSO4TriggerBase.clear_caches()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.triggers.MSO4TriggerBase.force"><code class="docutils literal notranslate"><span class="pre">MSO4TriggerBase.force()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.triggers.MSO4TriggerBase.source"><code class="docutils literal notranslate"><span class="pre">MSO4TriggerBase.source</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.triggers.MSO4TriggerBase.coupling"><code class="docutils literal notranslate"><span class="pre">MSO4TriggerBase.coupling</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.triggers.MSO4TriggerBase.level"><code class="docutils literal notranslate"><span class="pre">MSO4TriggerBase.level</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.triggers.MSO4TriggerBase.mode"><code class="docutils literal notranslate"><span class="pre">MSO4TriggerBase.mode</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pyMSO4.triggers.MSO4EdgeTrigger"><code class="docutils literal notranslate"><span class="pre">MSO4EdgeTrigger</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.triggers.MSO4EdgeTrigger.__init__"><code class="docutils literal notranslate"><span class="pre">MSO4EdgeTrigger.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.triggers.MSO4EdgeTrigger.clear_caches"><code class="docutils literal notranslate"><span class="pre">MSO4EdgeTrigger.clear_caches()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.triggers.MSO4EdgeTrigger.edge_slope"><code class="docutils literal notranslate"><span class="pre">MSO4EdgeTrigger.edge_slope</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pyMSO4.triggers.MSO4WidthTrigger"><code class="docutils literal notranslate"><span class="pre">MSO4WidthTrigger</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.triggers.MSO4WidthTrigger.__init__"><code class="docutils literal notranslate"><span class="pre">MSO4WidthTrigger.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.triggers.MSO4WidthTrigger.clear_caches"><code class="docutils literal notranslate"><span class="pre">MSO4WidthTrigger.clear_caches()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.triggers.MSO4WidthTrigger.lowlimit"><code class="docutils literal notranslate"><span class="pre">MSO4WidthTrigger.lowlimit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.triggers.MSO4WidthTrigger.highlimit"><code class="docutils literal notranslate"><span class="pre">MSO4WidthTrigger.highlimit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.triggers.MSO4WidthTrigger.when"><code class="docutils literal notranslate"><span class="pre">MSO4WidthTrigger.when</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.triggers.MSO4WidthTrigger.polarity"><code class="docutils literal notranslate"><span class="pre">MSO4WidthTrigger.polarity</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.triggers.MSO4WidthTrigger.logicqualification"><code class="docutils literal notranslate"><span class="pre">MSO4WidthTrigger.logicqualification</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pyMSO4.util">pyMSO4.util module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pyMSO4.util.DisableNewAttr"><code class="docutils literal notranslate"><span class="pre">DisableNewAttr</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.util.DisableNewAttr.__init__"><code class="docutils literal notranslate"><span class="pre">DisableNewAttr.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.util.DisableNewAttr.disable_newattr"><code class="docutils literal notranslate"><span class="pre">DisableNewAttr.disable_newattr()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.util.DisableNewAttr.enable_newattr"><code class="docutils literal notranslate"><span class="pre">DisableNewAttr.enable_newattr()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.util.DisableNewAttr.disable_strict_newattr"><code class="docutils literal notranslate"><span class="pre">DisableNewAttr.disable_strict_newattr()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.util.DisableNewAttr.add_read_only"><code class="docutils literal notranslate"><span class="pre">DisableNewAttr.add_read_only()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyMSO4.util.DisableNewAttr.remove_read_only"><code class="docutils literal notranslate"><span class="pre">DisableNewAttr.remove_read_only()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pyMSO4">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyMSO4</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api.html">API</a></li>
+      <li class="breadcrumb-item active">pyMSO4.pyMSO4 module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/pyMSO4.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pyMSO4.pyMSO4">
+<span id="pymso4-pymso4-module"></span><h1>pyMSO4.pyMSO4 module<a class="headerlink" href="#module-pyMSO4.pyMSO4" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyMSO4.pyMSO4.</span></span><span class="sig-name descname"><span class="pre">MSO4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trig_type:</span> <span class="pre">~typing.Type[~pyMSO4.triggers.MSO4EdgeTrigger]</span> <span class="pre">|</span> <span class="pre">~typing.Type[~pyMSO4.triggers.MSO4WidthTrigger]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'pyMSO4.triggers.MSO4EdgeTrigger'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">2000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/pyMSO4.html#MSO4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Tektronix MSO 4-Series scope object. This is not usable until <a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.con" title="pyMSO4.pyMSO4.MSO4.con"><code class="xref py py-func docutils literal notranslate"><span class="pre">MSO4.con()</span></code></a> is called.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trig_type:</span> <span class="pre">~typing.Type[~pyMSO4.triggers.MSO4EdgeTrigger]</span> <span class="pre">|</span> <span class="pre">~typing.Type[~pyMSO4.triggers.MSO4WidthTrigger]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'pyMSO4.triggers.MSO4EdgeTrigger'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">2000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/pyMSO4.html#MSO4.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.__init__" title="Link to this definition"></a></dt>
+<dd><p>Creates a new MSO4 object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trig_type</strong> – The type of trigger to use. This can be changed later.</p></li>
+<li><p><strong>timeout</strong> – Timeout (in ms) for each VISA operation, including the CURVE? query.</p></li>
+<li><p><strong>debug</strong> – Enable printing each VISA operation to the console</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.rm">
+<span class="sig-name descname"><span class="pre">rm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pyvisa.readthedocs.io/en/latest/api/resourcemanager.html#pyvisa.highlevel.ResourceManager" title="(in PyVISA v1.14.2.dev21+g6bca992)"><span class="pre">ResourceManager</span></a></em><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.rm" title="Link to this definition"></a></dt>
+<dd><p>pyvisa ResourceManager object used tp setup the connection</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.sc">
+<span class="sig-name descname"><span class="pre">sc</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pyvisa.readthedocs.io/en/latest/api/resources.html#pyvisa.resources.MessageBasedResource" title="(in PyVISA v1.14.2.dev21+g6bca992)"><span class="pre">MessageBasedResource</span></a></em><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.sc" title="Link to this definition"></a></dt>
+<dd><p>pyvisa MessageBasedResource object used to communicate with the scope</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.acq">
+<span class="sig-name descname"><span class="pre">acq</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#pyMSO4.acquisition.MSO4Acquisition" title="pyMSO4.acquisition.MSO4Acquisition"><span class="pre">MSO4Acquisition</span></a></em><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.acq" title="Link to this definition"></a></dt>
+<dd><p>MSO4Acquisition instance used to control the acquisition settings</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.ch_a">
+<span class="sig-name descname"><span class="pre">ch_a</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyMSO4.channel.MSO4AnalogChannel" title="pyMSO4.channel.MSO4AnalogChannel"><span class="pre">MSO4AnalogChannel</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.ch_a" title="Link to this definition"></a></dt>
+<dd><p>List of MSO4AnalogChannel instances used to control the analog channels</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.debug">
+<span class="sig-name descname"><span class="pre">debug</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.debug" title="Link to this definition"></a></dt>
+<dd><p>Debug mode</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.connect_status">
+<span class="sig-name descname"><span class="pre">connect_status</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.connect_status" title="Link to this definition"></a></dt>
+<dd><p>Current connection status</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.clear_cache">
+<span class="sig-name descname"><span class="pre">clear_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pyMSO4/pyMSO4.html#MSO4.clear_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.clear_cache" title="Link to this definition"></a></dt>
+<dd><p>Resets the local configuration cache so that values will be fetched from
+the scope. Is recursively called on all subobjects (trigger, acquisition, channels).</p>
+<p>This is useful when the scope configuration is (potentially) changed externally.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.con">
+<span class="sig-name descname"><span class="pre">con</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">usb_vid_pid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/pyMSO4/pyMSO4.html#MSO4.con"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.con" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Connects to scope and:</dt><dd><ul class="simple">
+<li><p>clears event queue, standard event status register, status byte register</p></li>
+<li><p>sets timeout = timeout from <a class="reference internal" href="#pyMSO4.pyMSO4.MSO4.__init__" title="pyMSO4.pyMSO4.MSO4.__init__"><code class="xref py py-func docutils literal notranslate"><span class="pre">MSO4.__init__()</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<p>Either <code class="docutils literal notranslate"><span class="pre">ip</span></code> or <code class="docutils literal notranslate"><span class="pre">usb_vid_pid</span></code> must be specified (not both).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ip</strong> (<em>str</em>) – IP address of scope</p></li>
+<li><p><strong>usb_vid_pid</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – USB VID and PID of scope</p></li>
+<li><p><strong>kwargs</strong> – Additional arguments to pass to <code class="docutils literal notranslate"><span class="pre">pyvisa.ResourceManager.open_resource</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if successful, False otherwise</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – Both or neither IP address and USB VID/PID were specified</p></li>
+<li><p><strong>OSError</strong> – Invalid vendor or model returned from scope</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.dis">
+<span class="sig-name descname"><span class="pre">dis</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pyMSO4/pyMSO4.html#MSO4.dis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.dis" title="Link to this definition"></a></dt>
+<dd><p>Disconnects from scope and clears all local data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.reboot">
+<span class="sig-name descname"><span class="pre">reboot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pyMSO4/pyMSO4.html#MSO4.reboot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.reboot" title="Link to this definition"></a></dt>
+<dd><p>Reboots the UI (as well as VISA server) on the scope. Note this will kill the current connection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pyMSO4/pyMSO4.html#MSO4.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.reset" title="Link to this definition"></a></dt>
+<dd><p>Resets scope to default settings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.busy">
+<span class="sig-name descname"><span class="pre">busy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/pyMSO4/pyMSO4.html#MSO4.busy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.busy" title="Link to this definition"></a></dt>
+<dd><p>Queries the status of the scope</p>
+<p>Returns: True if the scope is currently busy processing commands that generate
+an OPC Message, False otherwise.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.cls">
+<span class="sig-name descname"><span class="pre">cls</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pyMSO4/pyMSO4.html#MSO4.cls"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.cls" title="Link to this definition"></a></dt>
+<dd><p>Clears event queue, standard event status register, status byte register.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.clear_cmd">
+<span class="sig-name descname"><span class="pre">clear_cmd</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pyMSO4/pyMSO4.html#MSO4.clear_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.clear_cmd" title="Link to this definition"></a></dt>
+<dd><p>Clears all acquisitions, measurements, and waveforms.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.clear_buffers">
+<span class="sig-name descname"><span class="pre">clear_buffers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pyMSO4/pyMSO4.html#MSO4.clear_buffers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.clear_buffers" title="Link to this definition"></a></dt>
+<dd><p>Clears the resource buffers.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.ch_a_enable">
+<span class="sig-name descname"><span class="pre">ch_a_enable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pyMSO4/pyMSO4.html#MSO4.ch_a_enable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.ch_a_enable" title="Link to this definition"></a></dt>
+<dd><p>Convenience function to enable/disable analog channels.
+Will start at channel 1 and enable/disable as many channels as
+there are values in the list.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.trigger">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">trigger</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyMSO4.triggers.MSO4EdgeTrigger" title="pyMSO4.triggers.MSO4EdgeTrigger"><span class="pre">MSO4EdgeTrigger</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyMSO4.triggers.MSO4WidthTrigger" title="pyMSO4.triggers.MSO4WidthTrigger"><span class="pre">MSO4WidthTrigger</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.trigger" title="Link to this definition"></a></dt>
+<dd><p>Current trigger object instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the current trigger object instance (MSO4Triggers)</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Instantiate a new trigger object given a MSO4Triggers type.
+Also applies the configuration to the scope.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.timeout">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timeout</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.timeout" title="Link to this definition"></a></dt>
+<dd><p>Timeout (in ms) for each VISA operation (also those that will stall on the scope end, like CURVE?).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the number of milliseconds before a timeout (float)</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the timeout in milliseconds (float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.ch_a_num">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ch_a_num</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.ch_a_num" title="Link to this definition"></a></dt>
+<dd><p>Number of analog channels on the scope.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the number of analog channels (int)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.MSO4.display">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">display</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#pyMSO4.pyMSO4.MSO4.display" title="Link to this definition"></a></dt>
+<dd><p>Enable or disable the waveform display on the scope display.</p>
+<p><em>Not cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the display state (bool)</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the display state (bool)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyMSO4.pyMSO4.usb_reboot">
+<span class="sig-prename descclassname"><span class="pre">pyMSO4.pyMSO4.</span></span><span class="sig-name descname"><span class="pre">usb_reboot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/pyMSO4/pyMSO4.html#usb_reboot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.pyMSO4.usb_reboot" title="Link to this definition"></a></dt>
+<dd><p>Reboots the scope via USB when it is not reachable through TCP/IP.
+Does not require a pre-existing connection to the scope.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vid</strong> – USB Vendor ID</p></li>
+<li><p><strong>pid</strong> – USB Product ID</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the reboot command was sent successfully, False otherwise</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-pyMSO4.acquisition">
+<span id="pymso4-acquisition-module"></span><h1>pyMSO4.acquisition module<a class="headerlink" href="#module-pyMSO4.acquisition" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyMSO4.acquisition.</span></span><span class="sig-name descname"><span class="pre">MSO4Acquisition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pyvisa.readthedocs.io/en/latest/api/resources.html#pyvisa.resources.MessageBasedResource" title="(in PyVISA v1.14.2.dev21+g6bca992)"><span class="pre">MessageBasedResource</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_a_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/acquisition.html#MSO4Acquisition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyMSO4.util.DisableNewAttr" title="pyMSO4.util.DisableNewAttr"><code class="xref py py-class docutils literal notranslate"><span class="pre">DisableNewAttr</span></code></a></p>
+<p>Handle all the properties related to waveform acquisition.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pyvisa.readthedocs.io/en/latest/api/resources.html#pyvisa.resources.MessageBasedResource" title="(in PyVISA v1.14.2.dev21+g6bca992)"><span class="pre">MessageBasedResource</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_a_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/acquisition.html#MSO4Acquisition.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.__init__" title="Link to this definition"></a></dt>
+<dd><p>Create a new acquisition object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res</strong> – The VISA resource object</p></li>
+<li><p><strong>ch_a_count</strong> – The number of analog channels available on the scope (1-based, so 4 if the scope has 4 channels)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.clear_caches">
+<span class="sig-name descname"><span class="pre">clear_caches</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/acquisition.html#MSO4Acquisition.clear_caches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.clear_caches" title="Link to this definition"></a></dt>
+<dd><p>Resets the local configuration cache so that values will be fetched from
+the scope.</p>
+<p>This is useful when the scope configuration is (potentially) changed externally.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.configured">
+<span class="sig-name descname"><span class="pre">configured</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/pyMSO4/acquisition.html#MSO4Acquisition.configured"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.configured" title="Link to this definition"></a></dt>
+<dd><p>Check if the scope have been configured for acquisition.</p>
+<p>Returns: True if configured, raises otherwise</p>
+<p>Raises: ValueError if any of the required variables are not set</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.mode">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.mode" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>The acquisition mode of the scope. Valid modes are:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sample</span></code>: SAMple specifies that the displayed data point value is the
+sampled value that is taken during the acquisition interval</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">peakdetect</span></code>: PEAKdetect specifies the display of high-low range of the
+samples taken from a single waveform acquisition.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hires</span></code>: HIRes specifies Hi Res mode where the displayed data point
+value is the average of all the samples taken during the acquisition interval</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">average</span></code>: AVErage specifies averaging mode, in which the resulting
+waveform shows an average of SAMple data points from several separate
+waveform acquisitions.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">envelope</span></code>: ENVelope specifies envelope mode, where the resulting waveform
+displays the range of PEAKdetect from continued waveform acquisitions.</p></li>
+</ul>
+</dd>
+</dl>
+<p><em>Not cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the acquisition mode</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the acquisition mode</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.stop_after">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stop_after</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.stop_after" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Wether the instrument continually acquires waves or acquires a single sequence. Valid modes are:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sequence</span></code>: specifies that the next acquisition will be a single-sequence acquisition</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">runstop</span></code>: specifies that the instrument will continually acquire data, if
+ACQuire:STATE is turned on.</p></li>
+</ul>
+</dd>
+</dl>
+<p><em>Not cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the acquisition mode</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the acquisition mode.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.num_seq">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_seq</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.num_seq" title="Link to this definition"></a></dt>
+<dd><p>In single sequence acquisition mode, specify the number of acquisitions or measurements
+that comprise the sequence.</p>
+<p><em>Not cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the number of acquisitions or measurements</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the number of acquisitions or measurements</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.horiz_mode">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horiz_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.horiz_mode" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>The horizontal operating mode. Valid values are:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">auto</span></code>: automatically adjusts the sample rate and record length to provide
+a high acquisition rate in Fast Acq or signal fidelity in analysis</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">manual</span></code>: lets you change the sample rate, horizontal scale, and record length.
+These values interact. For example, when you change record length
+then the horizontal scale also changes.</p></li>
+</ul>
+</dd>
+</dl>
+<p><em>Not cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the mode</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the mode</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.horiz_sample_rate">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horiz_sample_rate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.horiz_sample_rate" title="Link to this definition"></a></dt>
+<dd><p>The horizontal sample rate of the waveform.</p>
+<p><em>Not cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the sample rate in Hz</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the sample rate in Hz (int or float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.horiz_scale">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horiz_scale</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.horiz_scale" title="Link to this definition"></a></dt>
+<dd><p>The horizontal scale of the waveform.</p>
+<p><em>Not cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the scale in s</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the scale in s (int or float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.horiz_pos">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horiz_pos</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.horiz_pos" title="Link to this definition"></a></dt>
+<dd><p>The horizontal position of the waveform in percent of the screen:
+0% is the left edge of the screen and 100% is the right edge of the screen.</p>
+<p><em>Not cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the position in %</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the position in % (int or float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.horiz_record_length">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horiz_record_length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.horiz_record_length" title="Link to this definition"></a></dt>
+<dd><p>The horizontal record length of the waveform.</p>
+<p><em>Not cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the record length</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the record length</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.wfm_src">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wfm_src</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.wfm_src" title="Link to this definition"></a></dt>
+<dd><p>Source of the retrieved waveform (analog FlexChannel(s) source(s)). Valid values are <code class="docutils literal notranslate"><span class="pre">chN</span></code> (Analog channel n).</p>
+<p><em>Not cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the source</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the source</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.wfm_start">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wfm_start</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.wfm_start" title="Link to this definition"></a></dt>
+<dd><p>The starting data point for waveform transfer.</p>
+<p><em>Not cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the start index</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the start index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.wfm_stop">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wfm_stop</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.wfm_stop" title="Link to this definition"></a></dt>
+<dd><p>The last data point that will be transferred when retrieving the waveform.</p>
+<p><em>Not cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the stop index</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the stop index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.wfm_len">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wfm_len</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.wfm_len" title="Link to this definition"></a></dt>
+<dd><p>The number of data points in the waveform.</p>
+<p><em>Not cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the number of data points</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.wfm_encoding">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wfm_encoding</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.wfm_encoding" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>The encoding of the waveform data.  Valid values are:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">binary</span></code>: Binary</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ascii</span></code>: ASCII</p></li>
+</ul>
+</dd>
+</dl>
+<p><em>Cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the encoding</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the encoding</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – Invalid encoding</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.wfm_binary_format">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wfm_binary_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.wfm_binary_format" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>The data format of binary waveform data. Valid values are:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ri</span></code>: Signed integer</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rp</span></code>: Unsigned integer</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fp</span></code>: Floating point</p></li>
+</ul>
+</dd>
+</dl>
+<p><em>Cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the data format</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the data format</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – Invalid data format</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.wfm_byte_nr">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wfm_byte_nr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.wfm_byte_nr" title="Link to this definition"></a></dt>
+<dd><p>The number of bytes per data point in the waveform.</p>
+<p><em>Cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the number of bytes per data point</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the number of bytes per data point
+NOTE: Check the programmer manual for valid values § WFMOutpre:BYT_Nr. If unsure, clear the cache with <code class="code docutils literal notranslate"><span class="pre">scope._clear_cache()</span></code> and read back the value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.wfm_byte_order">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wfm_byte_order</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.wfm_byte_order" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>The byte order of the waveform data. Valid values are:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">lsb</span></code>: Least significant byte first</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">msb</span></code>: Most significant byte first</p></li>
+</ul>
+</dd>
+</dl>
+<p><em>Cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the byte order</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the byte order</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – Invalid byte order</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.is_big_endian">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_big_endian</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.is_big_endian" title="Link to this definition"></a></dt>
+<dd><p>Return True if the byte order is big endian, False otherwise.</p>
+<p><em>Cached</em></p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.curvestream">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">curvestream</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.curvestream" title="Link to this definition"></a></dt>
+<dd><p>Enable or disable curvestream mode.</p>
+<p><em>Cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the curvestream state</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the curvestream state</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.fast_acq">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fast_acq</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.fast_acq" title="Link to this definition"></a></dt>
+<dd><p>Enable or disable fast acquisition mode.</p>
+<p><em>Cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the fast acquisition state</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the fast acquisition state</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.acquisition.MSO4Acquisition.get_datatype">
+<span class="sig-name descname"><span class="pre">get_datatype</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'s'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'b'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'B'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'h'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'H'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'i'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'I'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'l'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'L'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'q'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'Q'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'f'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'d'</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/pyMSO4/acquisition.html#MSO4Acquisition.get_datatype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.acquisition.MSO4Acquisition.get_datatype" title="Link to this definition"></a></dt>
+<dd><p>Get the data type of the binary waveform data in struct.pack form. Does not return endianess.</p>
+<p><em>Cached</em></p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyMSO4.channel">
+<span id="pymso4-channel-module"></span><h1>pyMSO4.channel module<a class="headerlink" href="#module-pyMSO4.channel" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyMSO4.channel.MSO4AnalogChannel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyMSO4.channel.</span></span><span class="sig-name descname"><span class="pre">MSO4AnalogChannel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pyvisa.readthedocs.io/en/latest/api/resources.html#pyvisa.resources.MessageBasedResource" title="(in PyVISA v1.14.2.dev21+g6bca992)"><span class="pre">MessageBasedResource</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/channel.html#MSO4AnalogChannel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.channel.MSO4AnalogChannel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyMSO4.util.DisableNewAttr" title="pyMSO4.util.DisableNewAttr"><code class="xref py py-class docutils literal notranslate"><span class="pre">DisableNewAttr</span></code></a></p>
+<p>Settings for each analog channel</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.channel.MSO4AnalogChannel.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pyvisa.readthedocs.io/en/latest/api/resources.html#pyvisa.resources.MessageBasedResource" title="(in PyVISA v1.14.2.dev21+g6bca992)"><span class="pre">MessageBasedResource</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/channel.html#MSO4AnalogChannel.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.channel.MSO4AnalogChannel.__init__" title="Link to this definition"></a></dt>
+<dd><p>Creates a new channel object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res</strong> – The VISA resource to use for communication</p></li>
+<li><p><strong>channel</strong> – The channel number (1-n)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.channel.MSO4AnalogChannel.clear_caches">
+<span class="sig-name descname"><span class="pre">clear_caches</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/channel.html#MSO4AnalogChannel.clear_caches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.channel.MSO4AnalogChannel.clear_caches" title="Link to this definition"></a></dt>
+<dd><p>Clear channel caches</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.channel.MSO4AnalogChannel.enable">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">enable</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#pyMSO4.channel.MSO4AnalogChannel.enable" title="Link to this definition"></a></dt>
+<dd><p>Enables the channel.</p>
+<p><em>Not cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the enable status</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the enable status</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.channel.MSO4AnalogChannel.scale">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scale</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#pyMSO4.channel.MSO4AnalogChannel.scale" title="Link to this definition"></a></dt>
+<dd><p>Sets the vertical scale of the waveform.</p>
+<p><em>Not cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the scale in V (float)</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the scale in V (int or float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.channel.MSO4AnalogChannel.position">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#pyMSO4.channel.MSO4AnalogChannel.position" title="Link to this definition"></a></dt>
+<dd><p>Sets the vertical position of the waveform.</p>
+<p><em>Not cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the position in V (float)</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the position in V (int or float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyMSO4.triggers">
+<span id="pymso4-triggers-module"></span><h1>pyMSO4.triggers module<a class="headerlink" href="#module-pyMSO4.triggers" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4TriggerBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyMSO4.triggers.</span></span><span class="sig-name descname"><span class="pre">MSO4TriggerBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pyvisa.readthedocs.io/en/latest/api/resources.html#pyvisa.resources.MessageBasedResource" title="(in PyVISA v1.14.2.dev21+g6bca992)"><span class="pre">MessageBasedResource</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_a_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'A'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/triggers.html#MSO4TriggerBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.triggers.MSO4TriggerBase" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyMSO4.util.DisableNewAttr" title="pyMSO4.util.DisableNewAttr"><code class="xref py py-class docutils literal notranslate"><span class="pre">DisableNewAttr</span></code></a></p>
+<p>Base trigger for the MSO 4-Series, used for settings shared by all trigger types</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4TriggerBase.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pyvisa.readthedocs.io/en/latest/api/resources.html#pyvisa.resources.MessageBasedResource" title="(in PyVISA v1.14.2.dev21+g6bca992)"><span class="pre">MessageBasedResource</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_a_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'A'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/triggers.html#MSO4TriggerBase.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.triggers.MSO4TriggerBase.__init__" title="Link to this definition"></a></dt>
+<dd><p>Create a new trigger object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res</strong> – The VISA resource to use for communication</p></li>
+<li><p><strong>ch_a_count</strong> – The number of analog channels available on the scope</p></li>
+<li><p><strong>event</strong> – The event channel (<code class="docutils literal notranslate"><span class="pre">A</span></code> or <code class="docutils literal notranslate"><span class="pre">B</span></code>) to use as a trigger.
+See: 4/5/6 Series MSO Help § Trigger on sequential events (A and B triggers)
+(<a class="reference external" href="https://www.tek.com/en/sitewide-content/manuals/4/5/6/4-5-6-series-mso-help">https://www.tek.com/en/sitewide-content/manuals/4/5/6/4-5-6-series-mso-help</a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4TriggerBase.clear_caches">
+<span class="sig-name descname"><span class="pre">clear_caches</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/triggers.html#MSO4TriggerBase.clear_caches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.triggers.MSO4TriggerBase.clear_caches" title="Link to this definition"></a></dt>
+<dd><p>Resets the local configuration cache so that values will be fetched from
+the scope.</p>
+<p>This is useful when the scope configuration is (potentially) changed externally.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4TriggerBase.force">
+<span class="sig-name descname"><span class="pre">force</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/triggers.html#MSO4TriggerBase.force"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.triggers.MSO4TriggerBase.force" title="Link to this definition"></a></dt>
+<dd><p>Force the trigger to occur immediately</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4TriggerBase.source">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">source</span></span><a class="headerlink" href="#pyMSO4.triggers.MSO4TriggerBase.source" title="Link to this definition"></a></dt>
+<dd><p>The source of the event currently configured as a trigger. Valid values are
+<code class="docutils literal notranslate"><span class="pre">chN</span></code> (Analog channel n) and <code class="docutils literal notranslate"><span class="pre">auxiliary</span></code>, <code class="docutils literal notranslate"><span class="pre">aux</span></code>, <code class="docutils literal notranslate"><span class="pre">line</span></code></p>
+<p><em>Cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the current trigger source</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the trigger source</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if value is not one of the allowed strings</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4TriggerBase.coupling">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">coupling</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#pyMSO4.triggers.MSO4TriggerBase.coupling" title="Link to this definition"></a></dt>
+<dd><p>The coupling of the trigger source. Valid couplings are <code class="docutils literal notranslate"><span class="pre">dc</span></code>, <code class="docutils literal notranslate"><span class="pre">hfrej</span></code>, <code class="docutils literal notranslate"><span class="pre">lfrej</span></code>, <code class="docutils literal notranslate"><span class="pre">noiserej</span></code></p>
+<p><em>Cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the current trigger coupling</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the trigger coupling</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if value is not one of the allowed strings</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4TriggerBase.level">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">level</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#pyMSO4.triggers.MSO4TriggerBase.level" title="Link to this definition"></a></dt>
+<dd><p>The trigger level</p>
+<p><em>Cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the current trigger level</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the trigger level (int or float)</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if value is not an int or float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4TriggerBase.mode">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#pyMSO4.triggers.MSO4TriggerBase.mode" title="Link to this definition"></a></dt>
+<dd><p>The trigger mode (<code class="docutils literal notranslate"><span class="pre">auto</span></code>/<code class="docutils literal notranslate"><span class="pre">normal</span></code>)</p>
+<p><em>Cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the current trigger mode</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the trigger mode</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NotImplementedError</strong> – if trigger event is not A</p></li>
+<li><p><strong>ValueError</strong> – if value is not one of the allowed strings</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4EdgeTrigger">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyMSO4.triggers.</span></span><span class="sig-name descname"><span class="pre">MSO4EdgeTrigger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pyvisa.readthedocs.io/en/latest/api/resources.html#pyvisa.resources.MessageBasedResource" title="(in PyVISA v1.14.2.dev21+g6bca992)"><span class="pre">MessageBasedResource</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_a_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'A'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/triggers.html#MSO4EdgeTrigger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.triggers.MSO4EdgeTrigger" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyMSO4.triggers.MSO4TriggerBase" title="pyMSO4.triggers.MSO4TriggerBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">MSO4TriggerBase</span></code></a></p>
+<p>Edge trigger</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4EdgeTrigger.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pyvisa.readthedocs.io/en/latest/api/resources.html#pyvisa.resources.MessageBasedResource" title="(in PyVISA v1.14.2.dev21+g6bca992)"><span class="pre">MessageBasedResource</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_a_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'A'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/triggers.html#MSO4EdgeTrigger.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.triggers.MSO4EdgeTrigger.__init__" title="Link to this definition"></a></dt>
+<dd><p>Create a new trigger object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res</strong> – The VISA resource to use for communication</p></li>
+<li><p><strong>ch_a_count</strong> – The number of analog channels available on the scope</p></li>
+<li><p><strong>event</strong> – The event channel (<code class="docutils literal notranslate"><span class="pre">A</span></code> or <code class="docutils literal notranslate"><span class="pre">B</span></code>) to use as a trigger.
+See: 4/5/6 Series MSO Help § Trigger on sequential events (A and B triggers)
+(<a class="reference external" href="https://www.tek.com/en/sitewide-content/manuals/4/5/6/4-5-6-series-mso-help">https://www.tek.com/en/sitewide-content/manuals/4/5/6/4-5-6-series-mso-help</a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4EdgeTrigger.clear_caches">
+<span class="sig-name descname"><span class="pre">clear_caches</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/triggers.html#MSO4EdgeTrigger.clear_caches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.triggers.MSO4EdgeTrigger.clear_caches" title="Link to this definition"></a></dt>
+<dd><p>Resets the local configuration cache so that values will be fetched from
+the scope.</p>
+<p>This is useful when the scope configuration is (potentially) changed externally.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4EdgeTrigger.edge_slope">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edge_slope</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#pyMSO4.triggers.MSO4EdgeTrigger.edge_slope" title="Link to this definition"></a></dt>
+<dd><p>The edge slope (<code class="docutils literal notranslate"><span class="pre">rise</span></code>/<code class="docutils literal notranslate"><span class="pre">fall</span></code>/<code class="docutils literal notranslate"><span class="pre">either</span></code>)</p>
+<p><em>Cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the current edge slope</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the edge slope</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if value is not one of the allowed strings</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4WidthTrigger">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyMSO4.triggers.</span></span><span class="sig-name descname"><span class="pre">MSO4WidthTrigger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pyvisa.readthedocs.io/en/latest/api/resources.html#pyvisa.resources.MessageBasedResource" title="(in PyVISA v1.14.2.dev21+g6bca992)"><span class="pre">MessageBasedResource</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_a_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'A'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/triggers.html#MSO4WidthTrigger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.triggers.MSO4WidthTrigger" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyMSO4.triggers.MSO4TriggerBase" title="pyMSO4.triggers.MSO4TriggerBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">MSO4TriggerBase</span></code></a></p>
+<p>Pulse Width trigger</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4WidthTrigger.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pyvisa.readthedocs.io/en/latest/api/resources.html#pyvisa.resources.MessageBasedResource" title="(in PyVISA v1.14.2.dev21+g6bca992)"><span class="pre">MessageBasedResource</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_a_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'A'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/triggers.html#MSO4WidthTrigger.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.triggers.MSO4WidthTrigger.__init__" title="Link to this definition"></a></dt>
+<dd><p>Create a new trigger object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res</strong> – The VISA resource to use for communication</p></li>
+<li><p><strong>ch_a_count</strong> – The number of analog channels available on the scope</p></li>
+<li><p><strong>event</strong> – The event channel (<code class="docutils literal notranslate"><span class="pre">A</span></code> or <code class="docutils literal notranslate"><span class="pre">B</span></code>) to use as a trigger.
+See: 4/5/6 Series MSO Help § Trigger on sequential events (A and B triggers)
+(<a class="reference external" href="https://www.tek.com/en/sitewide-content/manuals/4/5/6/4-5-6-series-mso-help">https://www.tek.com/en/sitewide-content/manuals/4/5/6/4-5-6-series-mso-help</a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4WidthTrigger.clear_caches">
+<span class="sig-name descname"><span class="pre">clear_caches</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/triggers.html#MSO4WidthTrigger.clear_caches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.triggers.MSO4WidthTrigger.clear_caches" title="Link to this definition"></a></dt>
+<dd><p>Resets the local configuration cache so that values will be fetched from
+the scope.</p>
+<p>This is useful when the scope configuration is (potentially) changed externally.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4WidthTrigger.lowlimit">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lowlimit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#pyMSO4.triggers.MSO4WidthTrigger.lowlimit" title="Link to this definition"></a></dt>
+<dd><p>The low limit of the pulse width (in seconds)</p>
+<p><em>Cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the current low limit</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the low limit (int or float)</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if value is not an int or float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4WidthTrigger.highlimit">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">highlimit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#pyMSO4.triggers.MSO4WidthTrigger.highlimit" title="Link to this definition"></a></dt>
+<dd><p>The high limit of the pulse width (in seconds)</p>
+<p><em>Cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the current high limit</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the high limit (int or float)</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if value is not an int or float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4WidthTrigger.when">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">when</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#pyMSO4.triggers.MSO4WidthTrigger.when" title="Link to this definition"></a></dt>
+<dd><p>Trigger when a pulse is detected with a width <code class="docutils literal notranslate"><span class="pre">lessthan</span></code>, <code class="docutils literal notranslate"><span class="pre">morethan</span></code>,
+<code class="docutils literal notranslate"><span class="pre">equal</span></code>, <code class="docutils literal notranslate"><span class="pre">unequal</span></code> the width specified with <a class="reference internal" href="#pyMSO4.triggers.MSO4WidthTrigger.lowlimit" title="pyMSO4.triggers.MSO4WidthTrigger.lowlimit"><code class="xref py py-attr docutils literal notranslate"><span class="pre">lowlimit</span></code></a>.
+When both <a class="reference internal" href="#pyMSO4.triggers.MSO4WidthTrigger.lowlimit" title="pyMSO4.triggers.MSO4WidthTrigger.lowlimit"><code class="xref py py-attr docutils literal notranslate"><span class="pre">lowlimit</span></code></a> and <a class="reference internal" href="#pyMSO4.triggers.MSO4WidthTrigger.highlimit" title="pyMSO4.triggers.MSO4WidthTrigger.highlimit"><code class="xref py py-attr docutils literal notranslate"><span class="pre">highlimit</span></code></a>
+are set, the trigger can occur when a pulse is either <code class="docutils literal notranslate"><span class="pre">within</span></code> or <code class="docutils literal notranslate"><span class="pre">outside</span></code>
+the specified width range.</p>
+<p><em>Cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the current when</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the when (str)</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if value is not one of the allowed strings</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4WidthTrigger.polarity">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">polarity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#pyMSO4.triggers.MSO4WidthTrigger.polarity" title="Link to this definition"></a></dt>
+<dd><p>The polarity of the pulse (<code class="docutils literal notranslate"><span class="pre">positive</span></code>/<code class="docutils literal notranslate"><span class="pre">negative</span></code>)</p>
+<p><em>Cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the current polarity</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the polarity (str)</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if value is not one of the allowed strings</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyMSO4.triggers.MSO4WidthTrigger.logicqualification">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">logicqualification</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#pyMSO4.triggers.MSO4WidthTrigger.logicqualification" title="Link to this definition"></a></dt>
+<dd><p>The logic qualification (<code class="docutils literal notranslate"><span class="pre">on</span></code>/<code class="docutils literal notranslate"><span class="pre">off</span></code>). See the oscilloscope help (p. 122) for more information.</p>
+<p><em>Cached</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Return the current logic qualification</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set the logic qualification (str)</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if value is not one of the allowed strings</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyMSO4.util">
+<span id="pymso4-util-module"></span><h1>pyMSO4.util module<a class="headerlink" href="#module-pyMSO4.util" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyMSO4.util.DisableNewAttr">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyMSO4.util.</span></span><span class="sig-name descname"><span class="pre">DisableNewAttr</span></span><a class="reference internal" href="_modules/pyMSO4/util.html#DisableNewAttr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.util.DisableNewAttr" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Provides an ability to disable setting new attributes in a class, useful to prevent typos.</p>
+<p>Usage:
+1. Make a class that inherits this class:
+&gt;&gt;&gt; class MyClass(DisableNewAttr):
+&gt;&gt;&gt;     # Your class definition here</p>
+<p>2. After setting up all attributes that your object needs, call disable_newattr():
+&gt;&gt;&gt;     def __init__(self):
+&gt;&gt;&gt;         self.my_attr = 123
+&gt;&gt;&gt;         self.disable_newattr()</p>
+<p>3. Subclasses raise an AttributeError when trying to make a new attribute:
+&gt;&gt;&gt; obj = MyClass()
+&gt;&gt;&gt; #obj.my_new_attr = 456   &lt;– Raises AttributeError</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.util.DisableNewAttr.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/util.html#DisableNewAttr.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.util.DisableNewAttr.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.util.DisableNewAttr.disable_newattr">
+<span class="sig-name descname"><span class="pre">disable_newattr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/util.html#DisableNewAttr.disable_newattr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.util.DisableNewAttr.disable_newattr" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.util.DisableNewAttr.enable_newattr">
+<span class="sig-name descname"><span class="pre">enable_newattr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/util.html#DisableNewAttr.enable_newattr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.util.DisableNewAttr.enable_newattr" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.util.DisableNewAttr.disable_strict_newattr">
+<span class="sig-name descname"><span class="pre">disable_strict_newattr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/util.html#DisableNewAttr.disable_strict_newattr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.util.DisableNewAttr.disable_strict_newattr" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.util.DisableNewAttr.add_read_only">
+<span class="sig-name descname"><span class="pre">add_read_only</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/util.html#DisableNewAttr.add_read_only"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.util.DisableNewAttr.add_read_only" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyMSO4.util.DisableNewAttr.remove_read_only">
+<span class="sig-name descname"><span class="pre">remove_read_only</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyMSO4/util.html#DisableNewAttr.remove_read_only"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyMSO4.util.DisableNewAttr.remove_read_only" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyMSO4">
+<span id="module-contents"></span><h1>Module contents<a class="headerlink" href="#module-pyMSO4" title="Link to this heading"></a></h1>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="api.html" class="btn btn-neutral float-left" title="API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, ceres-c.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

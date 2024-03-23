@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Usage &mdash; pyMSO4 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=2709fde1"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API" href="api.html" />
+    <link rel="prev" title="Building" href="building.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            pyMSO4
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="building.html">Building</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#visa-lxi-usbtmc">VISA, LXI, USBTMC…</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install">Install</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#udev-rules">Udev rules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#package-installation">Package installation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#connection">Connection</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#usb">USB</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ethernet">Ethernet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#verify-connectivity">Verify connectivity</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#minimal-usage-example">Minimal usage example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#square-calibration-wave">Square calibration wave</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cw305">CW305</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">cw305_capture_ch1_trigger_ch2.ipynb</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#target-cw305-endurance">ex2_cw305_endurance.py</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#troubleshoting">Troubleshoting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyMSO4</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Usage</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/usage.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h1>
+<section id="visa-lxi-usbtmc">
+<h2>VISA, LXI, USBTMC…<a class="headerlink" href="#visa-lxi-usbtmc" title="Link to this heading"></a></h2>
+<p>See this <a class="reference external" href="https://tomverbeure.github.io/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html">blogpost</a>
+for a quick overview of the different communication protocols first. We will
+communicate with the oscilloscope with VISA commands over TCP (LXI).
+Additionally, USBTMC will be used as a fallback mechanism in case the TCP
+connection is lost, and the oscilloscope needs to be reset.</p>
+</section>
+<section id="install">
+<h2>Install<a class="headerlink" href="#install" title="Link to this heading"></a></h2>
+<p>On a fresh debian 12 install, you can install the dependencies with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>python3<span class="w"> </span>python3-pip<span class="w"> </span>python3-venv<span class="w"> </span>libusb-1.0-0
+</pre></div>
+</div>
+<section id="udev-rules">
+<h3>Udev rules<a class="headerlink" href="#udev-rules" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span>sudo<span class="w"> </span>-E<span class="w"> </span>usermod<span class="w"> </span>-a<span class="w"> </span>-G<span class="w"> </span>dialout<span class="w"> </span><span class="nv">$USER</span>
+<span class="linenos">2</span><span class="c1"># Now logout</span>
+<span class="linenos">3</span>cp<span class="w"> </span><span class="m">50</span>-newae.rules<span class="w"> </span>/etc/udev/rules.d/50-newae.rules
+<span class="linenos">4</span>sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>ModemManager<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sudo<span class="w"> </span>systemctl<span class="w"> </span>mask<span class="w"> </span>ModemManager
+<span class="linenos">5</span>sudo<span class="w"> </span>udevadm<span class="w"> </span>control<span class="w"> </span>--reload-rules<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sudo<span class="w"> </span>udevadm<span class="w"> </span>trigger
+<span class="linenos">6</span><span class="c1"># Did you logout?</span>
+</pre></div>
+</div>
+</section>
+<section id="package-installation">
+<h3>Package installation<a class="headerlink" href="#package-installation" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span>python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv
+<span class="linenos">2</span><span class="nb">source</span><span class="w"> </span>venv/bin/activate
+<span class="linenos">3</span>pip3<span class="w"> </span>install<span class="w"> </span>pymso4
+</pre></div>
+</div>
+</section>
+</section>
+<section id="connection">
+<h2>Connection<a class="headerlink" href="#connection" title="Link to this heading"></a></h2>
+<p>The oscilloscope is connected to the computer both via USB and Ethernet. This
+is to have a failover mechanism in case the TCP connection is lost (which
+happens more often than expected). When the oscilloscope stops being reachable
+via TCP, the USB connection is used to perform a soft reset. Code in the
+<a class="reference external" href="https://github.com/ceres-c/pyMSO4/blob/dd9b5eee92a75c7ac4e3aa75638ab9423504a613/examples/ex2_cw305_endurance.py#L106">examples</a>
+shows how to handle disconnections.</p>
+<section id="usb">
+<h3>USB<a class="headerlink" href="#usb" title="Link to this heading"></a></h3>
+<p>Use a USB-B to USB-A cable to connect the oscilloscope to the computer. Plug
+the cable in the “Device” port on the back of the oscilloscope, and the other
+end to the computer.</p>
+</section>
+<section id="ethernet">
+<h3>Ethernet<a class="headerlink" href="#ethernet" title="Link to this heading"></a></h3>
+<p>I have connected the oscilloscope to the computer through a switch, but it
+should also be possible to connect the oscilloscope directly to the computer
+with Auto-MDIX.</p>
+</section>
+<section id="verify-connectivity">
+<h3>Verify connectivity<a class="headerlink" href="#verify-connectivity" title="Link to this heading"></a></h3>
+<p>To ensure the oscilloscope is reachable, run the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="nb">source</span><span class="w"> </span>venv/bin/activate
+<span class="linenos">2</span>pip3<span class="w"> </span>install<span class="w"> </span>psutil<span class="w"> </span><span class="c1"># Necessary to discover TCP devices</span>
+<span class="linenos">3</span>pyvisa-shell
+<span class="linenos">4</span><span class="o">(</span>visa<span class="o">)</span><span class="w"> </span>list
+<span class="linenos">5</span><span class="o">(</span><span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w"> </span>USB0::1689::1319::C019654::0::INSTR
+<span class="linenos">6</span><span class="o">(</span><span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="w"> </span>TCPIP::192.168.1.140::INSTR
+</pre></div>
+</div>
+<p>There should be at least 2 entries in the output, one for the USB device and
+one for the Ethernet device. Test they are both connectable with <code class="docutils literal notranslate"><span class="pre">open</span> <span class="pre">0</span></code> and
+<code class="docutils literal notranslate"><span class="pre">open</span> <span class="pre">1</span></code>, and query each with <code class="docutils literal notranslate"><span class="pre">query</span> <span class="pre">*IDN?</span></code>.</p>
+</section>
+</section>
+<section id="id1">
+<h2>Examples<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<section id="minimal-usage-example">
+<h3>Minimal usage example<a class="headerlink" href="#minimal-usage-example" title="Link to this heading"></a></h3>
+<p>Connect the probe on channel 1 to the calibration square wave output, and press
+the Autoset button, the following code will capture a trace of the signal as
+seen on the oscilloscope screen:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">import</span> <span class="nn">pyMSO4</span>
+<span class="linenos">2</span><span class="n">mso44</span> <span class="o">=</span> <span class="n">pyMSO4</span><span class="o">.</span><span class="n">MSO4</span><span class="p">(</span><span class="n">trig_type</span><span class="o">=</span><span class="n">pyMSO4</span><span class="o">.</span><span class="n">MSO4EdgeTrigger</span><span class="p">)</span>
+<span class="linenos">3</span><span class="n">mso44</span><span class="o">.</span><span class="n">con</span><span class="p">(</span><span class="n">ip</span><span class="o">=</span><span class="s2">&quot;128.181.240.130&quot;</span><span class="p">)</span> <span class="c1"># Using p2p ethernet connection</span>
+<span class="linenos">4</span><span class="n">mso44</span><span class="o">.</span><span class="n">ch_a_enable</span><span class="p">([</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">])</span> <span class="c1"># Enable channel 1</span>
+<span class="linenos">5</span><span class="n">mso44</span><span class="o">.</span><span class="n">acq</span><span class="o">.</span><span class="n">wfm_src</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ch1&#39;</span><span class="p">]</span> <span class="c1"># Set waveform source to channel 1</span>
+<span class="linenos">6</span><span class="n">mso44</span><span class="o">.</span><span class="n">acq</span><span class="o">.</span><span class="n">wfm_start</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">7</span><span class="n">mso44</span><span class="o">.</span><span class="n">acq</span><span class="o">.</span><span class="n">wfm_stop</span> <span class="o">=</span> <span class="n">mso44</span><span class="o">.</span><span class="n">acq</span><span class="o">.</span><span class="n">horiz_record_length</span> <span class="c1"># Get all data points</span>
+<span class="linenos">8</span><span class="n">wfm</span> <span class="o">=</span> <span class="n">mso44</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">query_binary_values</span><span class="p">(</span><span class="s1">&#39;CURVE?&#39;</span><span class="p">,</span> <span class="n">datatype</span><span class="o">=</span><span class="n">mso44</span><span class="o">.</span><span class="n">acq</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">(),</span> <span class="n">is_big_endian</span><span class="o">=</span><span class="n">mso44</span><span class="o">.</span><span class="n">acq</span><span class="o">.</span><span class="n">is_big_endian</span><span class="p">)</span>
+<span class="linenos">9</span><span class="n">mso44</span><span class="o">.</span><span class="n">dis</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="square-calibration-wave">
+<h3>Square calibration wave<a class="headerlink" href="#square-calibration-wave" title="Link to this heading"></a></h3>
+<a class="reference internal image-reference" href="_images/square_wave_setup.jpg"><img alt="Square wave setup" src="_images/square_wave_setup.jpg" style="width: 600px;" /></a>
+<p>The example in <a class="reference external" href="https://github.com/ceres-c/pyMSO4/blob/master/examples/ex0_square_capture.ipynb">ex0_square_capture.ipynb</a>
+shows how to acquire a square wave from the oscilloscope and plot it.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="nb">source</span><span class="w"> </span>venv/bin/activate
+<span class="linenos">2</span><span class="nb">cd</span><span class="w"> </span>examples
+<span class="linenos">3</span>pip3<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>cw305_requirements.txt
+<span class="linenos">4</span>jupyter<span class="w"> </span>lab<span class="w"> </span>ex0_square_capture.ipynb
+</pre></div>
+</div>
+</section>
+<section id="cw305">
+<h3>CW305<a class="headerlink" href="#cw305" title="Link to this heading"></a></h3>
+<p>The following examples will acquire power traces from a
+<a class="reference external" href="https://rtfm.newae.com/Targets/CW305%20Artix%20FPGA/">ChipWhisperer CW305 board</a>.</p>
+<p>The amplified signal from the CW305 (<code class="docutils literal notranslate"><span class="pre">X4</span></code>, top right) is connected to the
+MSO4’s channel 1 with an SMA-BNC cable. The trigger signal (<code class="docutils literal notranslate"><span class="pre">TP1</span></code>, bottom
+right) is connected to the MSO4’s channel 2 with a standard probe (ground to
+any metal part of the CW305).</p>
+<a class="reference internal image-reference" href="_images/cw305_setup.jpg"><img alt="CW305 setup" src="_images/cw305_setup.jpg" style="width: 600px;" /></a>
+<section id="id2">
+<h4><a class="reference external" href="https://github.com/ceres-c/pyMSO4/blob/master/examples/cw305_capture_ch1_trigger_ch2.ipynb">cw305_capture_ch1_trigger_ch2.ipynb</a><a class="headerlink" href="#id2" title="Link to this heading"></a></h4>
+<p>This notebook will acquire a limited amount of power traces from the board and
+plot them.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="nb">source</span><span class="w"> </span>venv/bin/activate
+<span class="linenos">2</span><span class="nb">cd</span><span class="w"> </span>examples
+<span class="linenos">3</span>pip3<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>cw305_requirements.txt
+<span class="linenos">4</span>jupyter<span class="w"> </span>lab<span class="w"> </span>cw305_capture_ch1_trigger_ch2.ipynb
+</pre></div>
+</div>
+<p>Then open the link in the terminal (adjusting the IP if you’re connecting from
+a remote machine)</p>
+</section>
+<section id="target-cw305-endurance">
+<span id="id3"></span><h4><a class="reference external" href="https://github.com/ceres-c/pyMSO4/blob/master/examples/ex2_cw305_endurance.py">ex2_cw305_endurance.py</a><a class="headerlink" href="#target-cw305-endurance" title="Link to this heading"></a></h4>
+<p>This script will acquire an indefinite amount of power traces from the board.
+It shows how to handle the unavoidable disconnects from the oscilloscope, and
+how to reset it.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="nb">source</span><span class="w"> </span>venv/bin/activate
+<span class="linenos">2</span><span class="nb">cd</span><span class="w"> </span>examples
+<span class="linenos">3</span>python3<span class="w"> </span>ex2_cw305_endurance.py
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="troubleshoting">
+<h2>Troubleshoting<a class="headerlink" href="#troubleshoting" title="Link to this heading"></a></h2>
+<p>The MSO44 is an interesting beast, and sometimes it will not behave as
+expected, nor as the documentation says. In the <a class="reference external" href="https://github.com/ceres-c/pyMSO4/blob/master/report/report.pdf">report §5.2</a> I have
+documented some of the issues I have encountered and how I have solved them.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="building.html" class="btn btn-neutral float-left" title="Building" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, ceres-c.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
