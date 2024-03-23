@@ -156,7 +156,7 @@ The software architecture of the oscilloscope seems to be more reminiscent of a 
 
 A quick reverse engineering analysis of the firmware showed that the control of the analog frontend is built into the UI binary, consequently, the \gls{lxi} server also has to go through the UI to execute commands. This becomes problematic when the \gls{lxi} server crashes and stops responding, causing the UI to also become unresponsive, thus requiring manual interaction to reboot the oscilloscope. Crashes will happen in multiple circumstances, but they can mostly be summed up in two categories:
 \begin{itemize}
-	\item \textbf{Buffer overflows}: The oscilloscope has a limited amount of memory, and it is easy to fill it up when acquiring and transferring multiple traces with the \texttt{CURVE?} command. Speed does not directly affect this issue, as even at speeds as low as 1 trace/s the oscilloscope will eventually crash after \(\sim 300\) traces. I speculate this is due to some internal elaboration buffer that is not being freed. This problem was solved with CurveStream and FastAcq modes (more in \ref{sec:pitfalls}).
+	\item \textbf{Memory leaks}: The oscilloscope has a limited amount of memory, and it is easy to fill it up when acquiring and transferring multiple traces with the \texttt{CURVE?} command. Speed does not directly affect this issue, as even at speeds as low as 1 trace/s the oscilloscope will eventually crash after \(\sim 300\) traces. I speculate this is due to some internal elaboration buffer that is not being freed. This problem was solved with CurveStream and FastAcq modes (more in \ref{sec:pitfalls}).
 	\item \textbf{Network issues}: The TCP stack running on the oscilloscope will stop responding to requests after a variable number of traces in the \(20000\sim 40000\) range, forcing again a manual reboot. This problem was solved by using the USB interface as a backup control interface.
 \end{itemize}
 
@@ -260,7 +260,7 @@ The oscilloscope supports different acquisition modes and settings (see \cite[p.
 \end{itemize}
 
 Two additional features related to acquisition are \textbf{FastAcq} and \textbf{CurveStream}. \textbf{FastAcq}\index{Acqusition!FastAcq} (Fast Acquisition) mode is a special mode that minimizes the processing done on the oscilloscope after trace acquisition, thus makes it transfer data to the host computer faster. Skipping the post-processing steps also means the oscilloscope might not behave as expecrted when changing the acquisition settings, see \autoref{item:fastacq} for more information.
-\textbf{CurveStream}\index{Acqusition!CurveStream} is a special mode that allows the oscilloscope to send the acquired waveform data directly to the host computer with minimal buffering. This is useful when the oscilloscope is used to acquire numerous waveforms in a short time, as it minimizes the risk of the oscilloscope crashing due to buffer overflows. See \autoref{item:curvestream}.
+\textbf{CurveStream}\index{Acqusition!CurveStream} is a special mode that allows the oscilloscope to send the acquired waveform data directly to the host computer with minimal buffering. This is useful when the oscilloscope is used to acquire numerous waveforms in a short time, as it minimizes the risk of the oscilloscope crashing due to memory leaks. See \autoref{item:curvestream}.
 The combination of FastAcq and CurveStream modes is the most efficient way to reliably acquire an indefinite number of traces from the oscilloscope.
 
 \subsubsection{Triggers}
@@ -329,7 +329,7 @@ With the code in \texttt{ex2\_cw305\_endurance.py}, the oscilloscope was able to
 	\item \textbf{Synchronization issues 2}: Some long-running commands can set the bit 0 of the \texttt{SESR} register when the execution is complete through the \texttt{*OPC} command (also see \autoref{item:opc}).\\
 	\textit{Solution:} A list of commands that support this signaling system is available in the manual\cite[t.~3-3]{tektronix:mso-progman}.
 	\item \textbf{\texttt{*OPC}}\label{item:opc}: The non-query version of \texttt{*OPC} does not work as stated in the manual\cite[p.~1001]{tektronix:mso-progman}: complete bit is not set in the register. The query version \texttt{*OPC?} works as expected.
-	\item \textbf{Buffer overflows}\label{item:curvestream}: As stated in \ref{sec:fw-info}, extensive usage of the \texttt{CURVE?} command will eventually crash the oscilloscope.\\
+	\item \textbf{Memory leaks}\label{item:curvestream}: As stated in \ref{sec:fw-info}, extensive usage of the \texttt{CURVE?} command will eventually crash the oscilloscope.\\
 	\textit{Solution:} Use CurveStream mode, which sends data directly to the host with minimal buffering
 	\item \textbf{CurveStream}: Using CurveStream mode without FastAcq mode will result in the oscilloscope crashing just like with the \texttt{CURVE?} command.\\
 	\textit{Solution:} Enable FastAcq mode.
